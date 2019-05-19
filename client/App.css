@@ -1,16 +1,16 @@
 @font-face {
-  font-family: 'Westington';
-  src: url('./assets/Westington.ttf')  format('truetype')
+  font-family: 'Code';
+  src: url('./assets/Coder.ttf')  format('truetype')
 }
 
 @font-face {
-  font-family: 'Rune';
+  font-family: 'Arcology';
+  src: url('./assets/Arcology.ttf')  format('truetype')
+}
+
+@font-face {
+  font-family: 'Avatar';
   src: url('./assets/V5_pixelpals.ttf')  format('truetype')
-}
-
-@font-face {
-  font-family: 'Gun';
-  src: url('./assets/FirearmEncyclopedia.ttf')  format('truetype')
 }
 
 @font-face {
@@ -19,8 +19,8 @@
 }
 
 @font-face {
-  font-family: 'Terrain';
-  src: url('./assets/Terrain.ttf')  format('truetype')
+  font-family: 'Grid';
+  src: url('./assets/Grid.ttf')  format('truetype')
 }
 
 html {
@@ -29,7 +29,7 @@ html {
 }
 
 body {
-  font-family: 'Westington';
+  font-family: 'Code';
   font-size: calc(10px + 1vw);
   line-height: unset
 }

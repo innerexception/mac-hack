@@ -90,7 +90,7 @@ export default class Map extends React.Component<Props, State> {
                     <div>Choose a Character</div>
                     {Characters.map(character => 
                         <div>
-                            <div style={{fontFamily: 'Rune'}}>{character.rune}</div>
+                            <div style={{fontFamily: 'Avatar'}}>{character.rune}</div>
                             {LightButton(true, ()=>onChooseCharacter(character, this.props.activeSession), character.id)}
                         </div>
                     )}
@@ -192,7 +192,7 @@ export default class Map extends React.Component<Props, State> {
         if(tileUnit){
             return <div style={{textAlign:'right', position:'absolute', top:0, right:0, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
                         ref={tileUnit.id === this.props.me.id && this.state.playerElRef as any}>
-                        <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.character.rune : 'U'}</span>
+                        <span style={{fontFamily:'Avatar', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.character.rune : 'U'}</span>
                         <div>{new Array(Math.max(0,tileUnit.hp)).fill(null).map((hp) =>  <span>*</span>)}</div>
                    </div>
         }
@@ -240,7 +240,7 @@ export default class Map extends React.Component<Props, State> {
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
+                                            <div style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
                                             {tile.minionId && <span style={{...styles.tileItem, fontFamily:'Item'}}>{getMinionRune(tile.minionId)}</span>}
                                             {tile.firewallId && <span style={{...styles.tileItem, fontFamily:'Gun'}}>{getFirewallRune(tile.firewallId)}</span>}
                                             {this.getUnitPortraitOfTile(tile)}

@@ -114,7 +114,7 @@ export default class Editor extends React.Component {
                                             borderStyle: isSelectedTile(tile, this.state.selectedTile) ? 'dashed' : 'dotted'
                                         }} 
                                         onClick={()=>this.setTileType(tile)}> 
-                                        <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
+                                        <div style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em'}}>{tile.subType}</div>
                                         {tile.minionSpawnerId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>a</div>}
                                         {tile.firewallId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>b</div>}
                                         {tile.hubId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>c</div>}
@@ -161,7 +161,7 @@ const styles = {
     },
     tile: {
         width: '2em',
-        height:'2em',
+        height:'1.7em',
         border: '1px',
         position:'relative' as 'relative'
     },
