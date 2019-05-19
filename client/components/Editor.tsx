@@ -4,6 +4,7 @@ import { TopBar } from './Shared';
 import { EmptyTile, TileSubType, TileType } from '../../enum'
 import { LightButton, Button } from './Shared'
 import { getRandomInt } from './Util'
+import * as FileSaver from 'file-saver'
 
 export default class Editor extends React.Component {
 
@@ -13,11 +14,8 @@ export default class Editor extends React.Component {
         tileBrush: TileType.GRID
     }
 
-    exportMapJson = () => {
-        console.log(JSON.stringify(this.state.map))
-    }
-
-    setTileType = (nextTile:Tile) => {
+    setTileType = async (nextTile:Tile) => {
+        await this.setState({selectedTile: nextTile})
         let newTile = {
             ...this.state.selectedTile,
             playerId: null as null,
@@ -27,7 +25,7 @@ export default class Editor extends React.Component {
             subType: (TileSubType as any)[this.state.tileBrush][getRandomInt((TileSubType as any)[this.state.tileBrush].length)]
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
-        this.setState({map: this.state.map, selectedTile:nextTile})
+        this.setState({map: this.state.map})
     }
 
     setTileMinionSpawn = () => {
@@ -55,6 +53,23 @@ export default class Editor extends React.Component {
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map, selectedTile:newTile})
     }
+    clearTile = () => {
+        let newTile = {
+            ...EmptyTile
+        }
+        this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
+        this.setState({map: this.state.map, selectedTile:newTile})
+    }
+
+    chooseFile = async (e:FileList) => {
+        const data = await new Response(e[0]).text()
+        this.setState({map: JSON.parse(data)})
+    }
+
+    saveFile = () => {
+        var file = new File([JSON.stringify(this.state.map)], "mapExport.json", {type: "text/json;charset=utf-8"});
+        FileSaver.saveAs(file);
+    }
 
     setMapWidth = (w:number) => {
         let map = new Array(w).fill([])
@@ -72,6 +87,9 @@ export default class Editor extends React.Component {
             <div style={{...AppStyles.window, padding:'0.5em', maxWidth:'25em'}}>
                 {TopBar('Editor')}
                 <div>
+                    <input type="file" onChange={ (e) => this.chooseFile(e.target.files) }/>
+                </div>
+                <div>
                     W: <input type='number' value={this.state.map.length} onChange={(e)=>this.setMapWidth(+e.currentTarget.value)}/>
                     H: <input type='number' value={this.state.map[0].length} onChange={(e)=>this.setMapHeight(+e.currentTarget.value)}/>
                 </div>
@@ -83,6 +101,7 @@ export default class Editor extends React.Component {
                     {LightButton(true, this.setTileMinionSpawn, 'Minion Spawner')}
                     {LightButton(true, this.setTileHub, 'Hub')}
                     {LightButton(true, this.setTileFirewall, 'Firewall')}
+                    {LightButton(true, this.clearTile, 'Clear')}
                 </div>
                 <div style={styles.mapFrame}>
                     <div style={{display:'flex'}}>
@@ -95,7 +114,7 @@ export default class Editor extends React.Component {
                                             borderStyle: isSelectedTile(tile, this.state.selectedTile) ? 'dashed' : 'dotted'
                                         }} 
                                         onClick={()=>this.setTileType(tile)}> 
-                                        <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div> //TODO update Terrain font set
+                                        <div style={{fontFamily:'Terrain', color: AppStyles.colors.grey3, fontSize:'2em'}}>{tile.subType}</div>
                                         {tile.minionSpawnerId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>a</div>}
                                         {tile.firewallId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>b</div>}
                                         {tile.hubId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>c</div>}
@@ -105,7 +124,7 @@ export default class Editor extends React.Component {
                         )}
                     </div>
                 </div>
-                {Button(true, this.exportMapJson, 'Export')}
+                {Button(true, this.saveFile, 'Export')}
             </div>
         )
     }

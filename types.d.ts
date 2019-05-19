@@ -4,7 +4,7 @@ declare enum MatchStatus {ACTIVE='ACTIVE',WIN='WIN',LOSE='LOSE', SETUP='SETUP'}
 
 declare enum TileType {
     GAP='GAP',
-    NETWORK_LINE='NETWORK_LINE',
+    NETWORK_LINE='NETWORK_LINE', //TODO: always visible, fill texture can vary
     GRID='GRID'
 }
 
@@ -16,17 +16,21 @@ interface Player {
     name:string
     id:string
     teamId: string
+    character: Character
     x:number
     y:number
     hp: number
     maxHp: number
     move: number
     maxMove: number
-    rune: string
-    gear: Array<Gear>
     abilities: Array<Ability>
     passives: Array<Passive>
     armor: number
+}
+
+interface Character {
+    id: string
+    rune: string
 }
 
 interface Ability {
@@ -36,14 +40,6 @@ interface Ability {
     cdr: number
     damage: number
     effect: StatusEffect
-}
-
-interface Gear {
-    name: string
-    armor: number
-    passive: Passive
-    attack: number
-    peirce: number
 }
 
 interface Passive {

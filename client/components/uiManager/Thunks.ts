@@ -103,9 +103,12 @@ export const onMatchTick = (session:Session) => {
         onEndTurn(session)
         return
     }
-    //TODO advance all minions one (checking simple adjacentcy for network line), 
-    //check for new minion orders/spawn
-    //check for minion attacks on firewalls/hubs/enemy minions
+    //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
+    //check for new network line color orders and start a segment fill
+    //check for capture progress on firewalls 
+    //(hacker present at a firewall touched by controlled network line and using capture ability) 
+    //or hub (fully controlled network line touching) 
+    //(capturing a final firewall causes unstoppable forward progress)
     //check victory
 
     sendSessionTick(session)
@@ -125,6 +128,10 @@ const onEndTurn = (session:Session) => {
 
 export const onUpdatePlayer = (player:Player, session:Session) => {
     sendReplacePlayer(session, player)
+}
+
+export const onChooseCharacter = (character:Character, session:Session) => {
+
 }
 
 export const onMatchWon = (session:Session) => {

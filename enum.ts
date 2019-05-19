@@ -69,3 +69,10 @@ export const EmptyTile = {
     minionSpawnerId: '',
     hubId:''
 }
+
+export const Characters = [
+    {
+        rune: 'a',
+        id: 'sniper',
+    }
+]

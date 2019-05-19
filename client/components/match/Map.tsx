@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { onMovePlayer, onAttackTile, onUpdatePlayer, onChooseCharacter } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, TileType, Directions } from '../../../enum'
+import { FourCoordinatesArray, TileType, Directions, Characters } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
 
@@ -77,10 +77,6 @@ export default class Map extends React.Component<Props, State> {
             return (
                 <div style={{...styles.disabled, display: 'flex'}}>
                     <div style={AppStyles.notification}>
-                        <div style={{marginBottom:'0.5em'}}>
-                            <span style={{fontFamily:'Rune', marginRight:'1em'}}>{(this.state.showDescription as Player).rune}</span>
-                            {(this.state.showDescription as Player).name}
-                        </div>
                         {Button(true, ()=>this.setState({showDescription:null}), 'Done')}
                     </div>
                 </div>
@@ -95,7 +91,7 @@ export default class Map extends React.Component<Props, State> {
                     {Characters.map(character => 
                         <div>
                             <div style={{fontFamily: 'Rune'}}>{character.rune}</div>
-                            {LightButton(true, ()=>onChooseCharacter(this.props.activeSession, character), character.name)}
+                            {LightButton(true, ()=>onChooseCharacter(character, this.props.activeSession), character.id)}
                         </div>
                     )}
                 </div>
@@ -196,7 +192,7 @@ export default class Map extends React.Component<Props, State> {
         if(tileUnit){
             return <div style={{textAlign:'right', position:'absolute', top:0, right:0, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
                         ref={tileUnit.id === this.props.me.id && this.state.playerElRef as any}>
-                        <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.rune : 'U'}</span>
+                        <span style={{fontFamily:'Rune', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.character.rune : 'U'}</span>
                         <div>{new Array(Math.max(0,tileUnit.hp)).fill(null).map((hp) =>  <span>*</span>)}</div>
                    </div>
         }
