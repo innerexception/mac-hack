@@ -11,18 +11,16 @@ export default class Editor extends React.Component {
     state = { 
         map: [[EmptyTile]],
         selectedTile: EmptyTile,
-        tileBrush: TileType.GRID
+        tileBrush: TileType.GRID,
+        tileRune: 'a'
     }
 
     setTileType = async (nextTile:Tile) => {
         await this.setState({selectedTile: nextTile})
         let newTile = {
             ...this.state.selectedTile,
-            playerId: null as null,
-            item: null as null,
-            weapon: null as null,
             type: this.state.tileBrush,
-            subType: (TileSubType as any)[this.state.tileBrush][getRandomInt((TileSubType as any)[this.state.tileBrush].length)]
+            subType: this.state.tileRune
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map})
@@ -81,7 +79,7 @@ export default class Editor extends React.Component {
         map = map.map((row, x) => row.map((tile, y) => {return {...tile, y}}))
         this.setState({map})
     }
-
+    
     render(){
         return (
             <div style={{...AppStyles.window, padding:'0.5em', maxWidth:'25em'}}>
@@ -95,8 +93,17 @@ export default class Editor extends React.Component {
                 </div>
                 <div style={styles.tileInfo}>
                     <h4 style={{margin:0}}>{this.state.selectedTile.type} {this.state.selectedTile.x}, {this.state.selectedTile.y}</h4>
-                    <div style={{display:'flex'}}>
-                        {Object.keys(TileType).map((key:TileType) => LightButton(true, ()=>this.setState({tileBrush: key}), key))}
+                    <div>
+                        {Object.keys(TileType).map((key:TileType) => 
+                            <div style={{display:'flex', flexWrap:'wrap'}}>
+                                <h6>{key}</h6>
+                                {TileSubType[key].map((subType) => 
+                                    <div onClick={()=>this.setState({tileBrush: key, tileRune:subType})} style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em'}}>
+                                        {subType}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                     {LightButton(true, this.setTileMinionSpawn, 'Minion Spawner')}
                     {LightButton(true, this.setTileHub, 'Hub')}
@@ -115,9 +122,9 @@ export default class Editor extends React.Component {
                                         }} 
                                         onClick={()=>this.setTileType(tile)}> 
                                         <div style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em'}}>{tile.subType}</div>
-                                        {tile.minionSpawnerId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>a</div>}
-                                        {tile.firewallId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>b</div>}
-                                        {tile.hubId && <div style={{fontFamily:'Item', color: AppStyles.colors.grey3, fontSize:'0.5em', textAlign:'left'}}>c</div>}
+                                        {tile.minionSpawnerId && <div style={{fontFamily:'Item', color: tile.minionSpawnerId, fontSize:'0.5em', textAlign:'left', position:'absolute', top:0,left:0}}>a</div>}
+                                        {tile.firewallId && <div style={{fontFamily:'Item', color: tile.firewallId, fontSize:'0.5em', textAlign:'left',position:'absolute', top:0,left:0}}>b</div>}
+                                        {tile.hubId && <div style={{fontFamily:'Item', color: tile.hubId, fontSize:'0.5em', textAlign:'left',position:'absolute', top:0,left:0}}>c</div>}
                                     </div>
                                 )}
                             </div>
@@ -157,7 +164,8 @@ const styles = {
         border: '1px dotted',
         display:'flex',
         justifyContent:'space-between',
-        flexWrap:'wrap' as 'wrap'
+        flexWrap:'wrap' as 'wrap',
+        overflow:'auto'
     },
     tile: {
         width: '2em',

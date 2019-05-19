@@ -49,13 +49,15 @@ export const EightCoordinatesArray = [{x:1,y:0},{x:1,y:-1},{x:0,y:-1},{x:-1,y:-1
 export enum TileType {
     GAP='GAP',
     NETWORK_LINE='NETWORK_LINE',
-    GRID='GRID'
+    GRID='GRID',
+    HUB='HUB'
 }
 
 export const TileSubType = {
-    GAP: ['a','h','i','j','k','g'],
-    GRID: ['l','m','n','o','b','c','d','e','f'],
-    NETWORK_LINE: ['p']
+    GAP: ['a','b','c','d','F','G','H','I','J','K','L','M'],
+    GRID: ['A','N','O','P','Q','R','S','T','w','x','y'],
+    NETWORK_LINE: ['B','C','D','E','W','X','Y','Z'],
+    HUB: ['q','r','s','t','u','v','1','2','U','V']
 }
 
 export const EmptyTile = {

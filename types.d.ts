@@ -4,8 +4,9 @@ declare enum MatchStatus {ACTIVE='ACTIVE',WIN='WIN',LOSE='LOSE', SETUP='SETUP'}
 
 declare enum TileType {
     GAP='GAP',
-    NETWORK_LINE='NETWORK_LINE', //TODO: always visible, fill texture can vary
-    GRID='GRID'
+    NETWORK_LINE='NETWORK_LINE',
+    GRID='GRID',
+    HUB='HUB'
 }
 
 declare enum StatusEffect {
