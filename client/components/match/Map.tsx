@@ -27,7 +27,7 @@ export default class Map extends React.Component<Props, State> {
     state = {
         attackingPlayer: false,
         showDescription: null as null,
-        showCharacterChooser: false,
+        showCharacterChooser: true,
         highlightTiles: [[false]],
         visibleTiles: getVisibleTilesOfPlayer(this.props.me, this.props.map),
         playerElRef: React.createRef(),
@@ -51,11 +51,12 @@ export default class Map extends React.Component<Props, State> {
 
     startMovePlayer = () => {
         this.setState({attackingPlayer:false, highlightTiles:[[false]]});
-        (this.state.playerElRef.current as any).scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center',
-                                            inline: 'center',
-                                        })
+        if(this.state.playerElRef.current)
+            (this.state.playerElRef.current as any).scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'center',
+                                                inline: 'center',
+                                            })
     }
                 
     getNotification = () => {
@@ -137,12 +138,12 @@ export default class Map extends React.Component<Props, State> {
                 candidateTile.playerId = player.id
                 this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
                     ()=>onMovePlayer(player, this.props.activeSession));
-
-                (this.state.playerElRef.current as any).scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                        inline: 'center',
-                    })
+                if(this.state.playerElRef.current)
+                    (this.state.playerElRef.current as any).scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'center',
+                        })
             }
         }
     }
@@ -240,10 +241,8 @@ export default class Map extends React.Component<Props, State> {
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
-                                            {tile.minionId && <span style={{...styles.tileItem, fontFamily:'Item'}}>{getMinionRune(tile.minionId)}</span>}
-                                            {tile.firewallId && <span style={{...styles.tileItem, fontFamily:'Gun'}}>{getFirewallRune(tile.firewallId)}</span>}
-                                            {this.getUnitPortraitOfTile(tile)}
+                                            <div style={{fontFamily:'Grid', backgroundColor: getTileBackgroundColor(tile), color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
+                                            {tile.playerId && this.getUnitPortraitOfTile(tile)}
                                         </div>
                                     )}
                                 </div>
@@ -261,22 +260,18 @@ export default class Map extends React.Component<Props, State> {
     }
 }
 
-const getMinionRune = (id:string) => {
-//TODO
-return 'a'
-}
-
-const getFirewallRune = (id:string) => {
-//TODO
-return 's'
-}
-
 const getUnitOpacity = (player:Player, me:Player, visibleTiles: Array<Array<boolean>>) => {
     let isOwner = player.id === me.id
     if(isOwner) 
         return 1
     else 
         return visibleTiles[player.x][player.y] ? 0.5 : 0
+}
+
+const getTileBackgroundColor = (tile:Tile) => {
+    if(tile.type === TileType.NETWORK_LINE)
+        return tile.minionId
+    else return 'transparent'
 }
 
 const getTerrainOpacity = (tile:Tile, visibleTiles: Array<Array<boolean>>) => {
@@ -305,24 +300,25 @@ const getTilesInRange = (player:Player, ability:Ability, map:Array<Array<Tile>>)
 const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
-    let playerTile = map[player.x][player.y]
-    for(var i=1; i<getTileSight(player, playerTile); i++){
-        let sideLength = 3 + (2*(i-1))
-        let corner = {x: player.x-i, y:player.y-i}
-
-        for(var y=0; y<sideLength;y++){
-            for(var x=0; x<sideLength; x++){
-                let candidate = {x: corner.x+x, y: corner.y+y}
-                if(candidate.y >= 0 && candidate.x >= 0 
-                    && candidate.x < map.length 
-                    && candidate.y < map[0].length){
-                        tiles[candidate.x][candidate.y] = true
-                    }
+    if(player.x > -1){
+        let playerTile = map[player.x][player.y]
+        for(var i=1; i<getTileSight(player, playerTile); i++){
+            let sideLength = 3 + (2*(i-1))
+            let corner = {x: player.x-i, y:player.y-i}
+    
+            for(var y=0; y<sideLength;y++){
+                for(var x=0; x<sideLength; x++){
+                    let candidate = {x: corner.x+x, y: corner.y+y}
+                    if(candidate.y >= 0 && candidate.x >= 0 
+                        && candidate.x < map.length 
+                        && candidate.y < map[0].length){
+                            tiles[candidate.x][candidate.y] = true
+                        }
+                }
             }
         }
-        
-
     }
+    
     return tiles
 }
 

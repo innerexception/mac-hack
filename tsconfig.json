@@ -4,6 +4,7 @@
         "sourceMap": true,
         "noImplicitAny": false,
         "moduleResolution": "node",
+        "resolveJsonModule": true,
         "strictNullChecks": false,
         "allowSyntheticDefaultImports": false,
         "experimentalDecorators": true,

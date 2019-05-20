@@ -1,4 +1,5 @@
-import { ReducerActions, MatchStatus } from '../../../enum'
+import { ReducerActions, MatchStatus, TileType } from '../../../enum'
+import * as TestGround from '../../assets/TestGround.json'
 
 const appReducer = (state = getInitialState(), action:any) => {
     switch (action.type) {
@@ -40,8 +41,38 @@ const getInitialState = () => {
 }
 
 const getSPSession = (currentUser:Player) => {
-    return {
-        players: [currentUser],
-        status: MatchStatus.ACTIVE
+    //TODO: add AI players
+    let initPlayers = [currentUser]
+    //TODO: player spawning character select flow
+    const players = initPlayers.map((player:Player, i) => {
+        return {
+            ...player,
+            x: -1,
+            y: -1,
+            hp: 5,
+            maxHp: 5,
+            move: 4,
+            maxMove: 4,
+            armor: 0
+        }
+    })
+    const newSession = {
+        status: MatchStatus.ACTIVE,
+        hostPlayerId: currentUser.id,
+        players,
+        map: TestGround.map((row, i) => 
+                row.map((tile:Tile, j) => {
+                    return {
+                        ...tile,
+                        x:i,
+                        y:j,
+                        firewallId: tile.firewallId ? 'gray' : '',
+                        minionId: tile.type === TileType.NETWORK_LINE ? 'gray' : ''
+                    }
+                })
+            ),
+        ticks: 0,
+        turnTickLimit: 15
     }
+    return newSession
 }

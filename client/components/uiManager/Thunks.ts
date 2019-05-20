@@ -1,6 +1,6 @@
 import { dispatch } from '../../../client/App'
 import { ReducerActions, MatchStatus, TileType, TileSubType } from '../../../enum'
-import Thunderdome from '../../assets/Thunderdome'
+import * as TestGround from '../../assets/TestGround.json'
 import { toast } from './toast';
 import { getRandomInt } from '../Util';
 import { server } from '../../App'
@@ -50,8 +50,8 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
     const players = session.players.map((player:Player, i) => {
         return {
             ...player,
-            x: Math.max(1, getRandomInt(Thunderdome.length-1)),
-            y: Math.max(1,getRandomInt(Thunderdome[0].length-1)),
+            x: Math.max(1, getRandomInt(TestGround.length-1)),
+            y: Math.max(1,getRandomInt(TestGround[0].length-1)),
             hp: 5,
             maxHp: 5,
             move: 4,
@@ -63,18 +63,17 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
         ...session,
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
-        players, //TODO, make basic map
-        // map: Thunderdome.map((row, i) => 
-        //         row.map((tile:Tile, j) => {
-        //             let player = players.find(player=>player.x===i && player.y === j)
-        //             return {
-        //                 ...tile,
-        //                 x:i,
-        //                 y:j,
-        //                 playerId: player ? player.id : null,
-        //             }
-        //         })
-        //     ),
+        players,
+        map: TestGround.map((row, i) => 
+                row.map((tile:Tile, j) => {
+                    return {
+                        ...tile,
+                        x:i,
+                        y:j,
+                        firewallId: tile.firewallId ? 'neutral' : ''
+                    }
+                })
+            ),
         ticks: 0,
         turnTickLimit: 15
     }

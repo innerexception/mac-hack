@@ -53,7 +53,9 @@ export default class Editor extends React.Component {
     }
     clearTile = () => {
         let newTile = {
-            ...EmptyTile
+            ...EmptyTile,
+            x: this.state.selectedTile.x,
+            y: this.state.selectedTile.y
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map, selectedTile:newTile})
