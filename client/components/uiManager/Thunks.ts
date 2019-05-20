@@ -130,7 +130,7 @@ export const onUpdatePlayer = (player:Player, session:Session) => {
 }
 
 export const onChooseCharacter = (character:Character, session:Session) => {
-
+    //TODO
 }
 
 export const onMatchWon = (session:Session) => {

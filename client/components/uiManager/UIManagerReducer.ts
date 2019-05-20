@@ -43,7 +43,6 @@ const getInitialState = () => {
 const getSPSession = (currentUser:Player) => {
     //TODO: add AI players
     let initPlayers = [currentUser]
-    //TODO: player spawning character select flow
     const players = initPlayers.map((player:Player, i) => {
         return {
             ...player,

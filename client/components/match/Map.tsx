@@ -241,7 +241,7 @@ export default class Map extends React.Component<Props, State> {
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{fontFamily:'Grid', backgroundColor: getTileBackgroundColor(tile), color: AppStyles.colors.grey3, fontSize:'2em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
+                                            <div style={{fontFamily:'Grid', backgroundColor: getTileBackgroundColor(tile), color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
                                             {tile.playerId && this.getUnitPortraitOfTile(tile)}
                                         </div>
                                     )}
@@ -281,7 +281,7 @@ const getTerrainOpacity = (tile:Tile, visibleTiles: Array<Array<boolean>>) => {
 const getTilesInRange = (player:Player, ability:Ability, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
-    //TODO: abilities may not be line only
+    //TODO: abilities may not be linear only
     FourCoordinatesArray.forEach((direction) => {
         let candidateX = player.x
         let candidateY = player.y
@@ -353,7 +353,7 @@ const styles = {
     },
     tile: {
         width: '2em',
-        height:'2em',
+        height:'1.7em',
         border: '1px',
         position:'relative' as 'relative'
     },
@@ -363,45 +363,5 @@ const styles = {
     levelBarOuter: {
         height:'0.25em',
         background: AppStyles.colors.white
-    },
-    leftArrow: {
-        position:'absolute' as 'absolute',
-        left:'-1em',
-        top:0,
-        bottom:0,
-        width:'1em',
-        height:'1em',
-        cursor:'pointer',
-        zIndex:2
-    },
-    rightArrow: {
-        position:'absolute' as 'absolute',
-        right:'-2em',
-        top:0,
-        bottom:0,
-        width:'1em',
-        height:'1em',
-        cursor:'pointer',
-        zIndex:2
-    },
-    upArrow: {
-        position:'absolute' as 'absolute',
-        right:0,
-        top:'-1em',
-        left:'1em',
-        width:'1em',
-        height:'1em',
-        cursor:'pointer',
-        zIndex:2
-    },
-    downArrow: {
-        position:'absolute' as 'absolute',
-        right:0,
-        bottom:'-1em',
-        left:'1em',
-        width:'1em',
-        height:'1em',
-        cursor:'pointer',
-        zIndex:2
     }
 }
