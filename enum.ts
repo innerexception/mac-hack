@@ -53,6 +53,10 @@ export enum TileType {
     HUB='HUB'
 }
 
+export enum StatusEffect {
+    HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',EDIT_STREAM='EDIT_STREAM',PULL='PULL'
+}
+
 export const TileSubType = {
     GAP: ['a','b','c','d','F','G','H','I','J','K','L','M'],
     GRID: ['A','N','O','P','Q','R','S','T','w','x','y'],
@@ -75,6 +79,100 @@ export const EmptyTile = {
 export const Characters = [
     {
         rune: 'a',
-        id: 'sniper',
+        id: 'Icer',
+        hp: 3,
+        maxHp: 3,
+        move: 30,
+        maxMove: 30,
+        abilities: [
+            {
+                name:'Attack',
+                range: 3,
+                radius: 0,
+                cdr: 1,
+                damage: 1,
+                effect: StatusEffect.NONE,
+                description: 'Basic attack, range 3.'
+            },
+            {
+                name:'Long Shot',
+                range: 6,
+                radius: 0,
+                cdr: 3,
+                damage: 2,
+                effect: StatusEffect.PIERCE,
+                description: 'Long range shot that pierces armor.'
+            },
+            {
+                name:'Snare',
+                range: 2,
+                radius: 0,
+                cdr: 3,
+                damage: 0,
+                effect: StatusEffect.MOVES_MINUS_1,
+                description: 'Network snare that causes the target to lose movement.'
+            },
+            {
+                name:'Canister Shot',
+                range: 2,
+                radius: 1,
+                cdr: 3,
+                damage: 1,
+                effect: StatusEffect.PIERCE,
+                description: 'A short range blast that pierces armor.'
+            },
+        ],
+        passives: [],
+        armor: 0,
+        sight: 5
+    },
+    {
+        rune: 'b',
+        id: 'Technician',
+        hp: 4,
+        maxHp: 4,
+        move: 3,
+        maxMove: 3,
+        abilities: [
+            {
+                name:'Attack',
+                range: 1,
+                radius: 0,
+                cdr: 1,
+                damage: 1,
+                effect: StatusEffect.PIERCE,
+                description: 'Basic melee attack. Pierces armor.'
+            },
+            {
+                name:'Capture',
+                range: 0,
+                radius: 0,
+                cdr: 1,
+                damage: 0,
+                effect: StatusEffect.CAPTURE,
+                description: 'Captures a network node.'
+            },
+            {
+                name:'Edit',
+                range: 0,
+                radius: 0,
+                cdr: 1,
+                damage: 0,
+                effect: StatusEffect.EDIT_STREAM,
+                description: 'Changes the type of a network emitter.'
+            },
+            {
+                name:'Attract',
+                range: 2,
+                radius: 0,
+                cdr: 3,
+                damage: 1,
+                effect: StatusEffect.PULL,
+                description: 'Pulls the target towards you.'
+            },
+        ],
+        passives: [],
+        armor: 2,
+        sight: 3
     }
 ]

@@ -39,19 +39,12 @@ export default class Login extends React.Component {
 const getUser = (name:string) => {
    return {
         name,
-        id: getId(), 
-        rune:'a',
-        teamId: '',
+        id: getId(),
+        teamColor: AppStyles.colors.white,
+        respawnTurns: 0,
         character: null,
-        x:0,
-        y:0,
-        hp: 0,
-        maxHp: 0,
-        move: 0,
-        maxMove: 0,
-        abilities: new Array<Ability>(),
-        passives: new Array<Passive>(),
-        armor: 0
+        x:-1,
+        y:-1
     }
 }
 

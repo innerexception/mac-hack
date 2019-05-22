@@ -10,7 +10,7 @@ interface Props {
 
 export default class Lobby extends React.Component<Props> {
 
-    state = { selectedAvatarIndex: 0, selectedTeamIndex: 0 }
+    state = { selectedAvatarIndex: 0, selectedTeamIndex: 0, teams: [AppStyles.colors.white, AppStyles.colors.grey2] }
 
     startMatch = () => {
         console.log(this.props)
@@ -22,24 +22,16 @@ export default class Lobby extends React.Component<Props> {
     getErrors = () => {
         let error, activeTeams=0
         if(this.props.activeSession.players.length < 4) error= 'Waiting for more to join...'
-        if(this.props.activeSession.players.length > 12) error= 'Too many players in match...'
-        this.props.activeSession.teams.forEach(team=>{
-            let teamPlayers = this.props.activeSession.players.filter(player=>player.teamId === team.id)
-            if(teamPlayers.length > 0){
-                activeTeams++
-                if(teamPlayers.length < 2) error='All teams need at least 2 players...'
-                if(!team.leadPlayerId) error='Each team needs a leader...'
-            }
-        })
-        if(activeTeams < 2) error='There must be at least 2 teams...'
+        if(this.props.activeSession.players.length > 8) error= 'Too many players in match...'
+        if(activeTeams !== 2) error='There must be 2 teams...'
         return error
     }
 
     changeTeam = () => {
-        const index = (this.state.selectedTeamIndex+1)%this.props.activeSession.teams.length
-        let team = this.props.activeSession.teams[index]
+        const index = (this.state.selectedTeamIndex+1)%this.state.teams.length
+        let team = this.state.teams[index]
         this.setState({selectedTeamIndex: index})
-        onUpdatePlayer({...this.props.currentUser, teamId:team.id}, this.props.activeSession)
+        onUpdatePlayer({...this.props.currentUser, teamColor:team}, this.props.activeSession)
     }
 
     render(){

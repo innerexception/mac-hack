@@ -30,7 +30,7 @@ export default class Match extends React.Component<Props, State> {
     render(){
         return (
             <div style={AppStyles.window}>
-                {TopBar('MacRoyale')}
+                {TopBar('MacHack')}
                 <div style={{padding:'0.5em', maxWidth:'25em'}}>
                     <Map map={this.props.activeSession.map} 
                         me={this.props.activeSession.players.find(player=>player.id===this.props.currentUser.id)}

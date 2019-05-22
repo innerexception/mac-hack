@@ -1,5 +1,6 @@
 import { ReducerActions, MatchStatus, TileType } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
+import AppStyles from '../../AppStyles';
 
 const appReducer = (state = getInitialState(), action:any) => {
     switch (action.type) {
@@ -42,23 +43,10 @@ const getInitialState = () => {
 
 const getSPSession = (currentUser:Player) => {
     //TODO: add AI players
-    let initPlayers = [currentUser]
-    const players = initPlayers.map((player:Player, i) => {
-        return {
-            ...player,
-            x: -1,
-            y: -1,
-            hp: 5,
-            maxHp: 5,
-            move: 4,
-            maxMove: 4,
-            armor: 0
-        }
-    })
     const newSession = {
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
-        players,
+        players: [currentUser],
         map: TestGround.map((row, i) => 
                 row.map((tile:Tile, j) => {
                     return {
@@ -71,7 +59,8 @@ const getSPSession = (currentUser:Player) => {
                 })
             ),
         ticks: 0,
-        turnTickLimit: 15
+        turnTickLimit: 15,
+        isSinglePlayer: true
     }
     return newSession
 }

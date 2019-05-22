@@ -10,16 +10,22 @@ declare enum TileType {
 }
 
 declare enum StatusEffect {
-    HP, HP5, CDR, CDR5, ARM, MOVES, ABILITY_LOCK
+    HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',EDIT_STREAM='EDIT_STREAM',PULL='PULL'
 }
 
 interface Player {
     name:string
     id:string
-    teamId: string
+    teamColor: string
+    respawnTurns: number
     character: Character
     x:number
     y:number
+}
+
+interface Character {
+    id: string
+    rune: string
     hp: number
     maxHp: number
     move: number
@@ -27,11 +33,7 @@ interface Player {
     abilities: Array<Ability>
     passives: Array<Passive>
     armor: number
-}
-
-interface Character {
-    id: string
-    rune: string
+    sight:number
 }
 
 interface Ability {
@@ -41,6 +43,7 @@ interface Ability {
     cdr: number
     damage: number
     effect: StatusEffect
+    description: string
 }
 
 interface Passive {
@@ -63,24 +66,17 @@ interface Tile {
     minionSpawnerId: string
 }
 
-interface Team {
-    id: string
-    color: string
-    score: number
-    leadPlayerId: string
-}
-
 interface Session {
-    sessionId: string,
-    hostPlayerId: string,
-    activePlayerId: string,
-    status: MatchStatus,
-    players: Array<Player>,
-    teams: Array<Team>,
-    map: Array<Array<Tile>>,
-    ticks: number,
-    turnTickLimit: number,
+    sessionId: string
+    hostPlayerId: string
+    activePlayerId: string
+    status: MatchStatus
+    players: Array<Player>
+    map: Array<Array<Tile>>
+    ticks: number
+    turnTickLimit: number
     turn: number
+    isSinglePlayer: boolean
 }
 
 interface RState {

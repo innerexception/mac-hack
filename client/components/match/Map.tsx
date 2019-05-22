@@ -4,6 +4,7 @@ import AppStyles from '../../AppStyles';
 import { FourCoordinatesArray, TileType, Directions, Characters } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
+import { compute } from '../Util';
 
 interface Props {
     activeSession: Session
@@ -14,7 +15,6 @@ interface Props {
 }
 
 interface State {
-    deadPlayers: Array<Player>
     attackingPlayer: boolean
     showDescription: Player | null
     showCharacterChooser: boolean
@@ -30,23 +30,12 @@ export default class Map extends React.Component<Props, State> {
         showCharacterChooser: true,
         highlightTiles: [[false]],
         visibleTiles: getVisibleTilesOfPlayer(this.props.me, this.props.map),
-        playerElRef: React.createRef(),
-        deadPlayers: []
+        playerElRef: React.createRef()
     }
 
     componentDidMount = () => {
         window.addEventListener('keydown', (e)=>this.handleKeyDown(e.keyCode))
         this.startMovePlayer()
-    }
-
-    componentWillReceiveProps = (props:Props) => {
-        let dead = props.activeSession.players.filter(player=>player.hp<=0)
-        dead.forEach(player=>{
-            if(!this.state.deadPlayers.find(dplayer=>dplayer.id === player.id)){
-                toast.show({message: player.name + ' died.'})
-            }
-        })
-        this.setState({deadPlayers: dead})
     }
 
     startMovePlayer = () => {
@@ -60,21 +49,7 @@ export default class Map extends React.Component<Props, State> {
     }
                 
     getNotification = () => {
-        let activePlayers = this.props.activeSession.players.filter(player=>player.hp>0)
-        if(activePlayers.length===1)
-            return <div style={{...styles.disabled, display: 'flex'}}>
-                        <div style={AppStyles.notification}>
-                            {activePlayers[0].name} is Victorious
-                        </div>
-                    </div>
-        else if(this.props.me.hp <= 0){
-            return <div style={{...styles.disabled, display: 'flex'}}>
-                        <div style={AppStyles.notification}>
-                            You died.
-                        </div>
-                    </div>
-        }
-        else if(this.state.showDescription)
+        if(this.state.showDescription)
             return (
                 <div style={{...styles.disabled, display: 'flex'}}>
                     <div style={AppStyles.notification}>
@@ -92,7 +67,13 @@ export default class Map extends React.Component<Props, State> {
                     {Characters.map(character => 
                         <div>
                             <div style={{fontFamily: 'Avatar'}}>{character.rune}</div>
-                            {LightButton(true, ()=>onChooseCharacter(character, this.props.activeSession), character.id)}
+                            {character.abilities.map(ability=>
+                                <div>
+                                    <h5>{ability.name}</h5>
+                                    <h6>{ability.description}</h6>
+                                </div>
+                            )}
+                            {LightButton(true, ()=>onChooseCharacter(this.props.me, character, this.props.activeSession), character.id)}
                         </div>
                     )}
                 </div>
@@ -103,22 +84,27 @@ export default class Map extends React.Component<Props, State> {
     getMyInfo = () => {
         let player = this.props.me
         return <div style={styles.tileInfo}>
-                    <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
-                        <h4>{player.name}</h4>
-                        <h4>HP: {player.hp}</h4>
-                        <h4>Arm: {player.armor}</h4>
-                    </div>
-                    <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
-                        <h4>Moves: {player.move} / {player.maxMove}</h4>
-                    </div>
-                    {this.getActionButtons(player)}
+                    <h4>{player.name}</h4>
+                    {player.character?
+                        <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
+                            <h4>HP: {player.character.hp}</h4>
+                            <h4>Arm: {player.character.armor}</h4>
+                            <h4>Moves: {player.character.move} / {player.character.maxMove}</h4>
+                            <div>
+                                {this.getActionButtons(player)}
+                            </div>
+                        </div> : 
+                        <div>
+                            <h4>Dead. Respawn in {player.respawnTurns} turns.</h4>
+                        </div>
+                    }
                 </div>
     }
     
 
     moveUnit = (player:Player, direction:Directions) => {
         let candidateTile = {...this.props.map[player.x][player.y]}
-        if(player.move > 0){
+        if(player.character.move > 0){
             switch(direction){
                 case Directions.DOWN: candidateTile.y++
                      break
@@ -133,7 +119,7 @@ export default class Map extends React.Component<Props, State> {
                 candidateTile = {...this.props.map[candidateTile.x][candidateTile.y]}
                 player.x = candidateTile.x
                 player.y = candidateTile.y
-                player.move--
+                player.character.move--
                
                 candidateTile.playerId = player.id
                 this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
@@ -179,7 +165,7 @@ export default class Map extends React.Component<Props, State> {
         if(player){
             let isOwner = player.id === this.props.me.id
             if(isOwner){
-                let buttons = player.abilities.map(ability=>LightButton(ability.cdr === 0, ()=>this.showAttackTiles(player, ability), ability.name))
+                let buttons = player.character.abilities.map(ability=>LightButton(ability.cdr === 0, ()=>this.showAttackTiles(player, ability), ability.name))
                 return <div>    
                             {buttons}
                        </div>
@@ -191,11 +177,10 @@ export default class Map extends React.Component<Props, State> {
     getUnitPortraitOfTile = (tile:Tile) => {
         let tileUnit = this.props.activeSession.players.find(player=>player.id === tile.playerId)
         if(tileUnit){
-            return <div style={{textAlign:'right', position:'absolute', top:0, right:0, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
+            return <div style={{...styles.unitFrame, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
                         ref={tileUnit.id === this.props.me.id && this.state.playerElRef as any}>
-                        <span style={{fontFamily:'Avatar', fontSize:'0.7em'}}>{tileUnit.hp > 0 ? tileUnit.character.rune : 'U'}</span>
-                        <div>{new Array(Math.max(0,tileUnit.hp)).fill(null).map((hp) =>  <span>*</span>)}</div>
-                   </div>
+                        <div style={{fontFamily:'Avatar', fontSize:'1em', width:'1em', height:'1em', backgroundColor:tileUnit.teamColor, borderRadius:'50%'}}>{tileUnit.character.hp > 0 ? tileUnit.character.rune : 'U'}</div>
+                    </div>
         }
         return <span/>
     }
@@ -206,10 +191,10 @@ export default class Map extends React.Component<Props, State> {
     }
 
     handleKeyDown = (keyCode:number) =>{
-        if(this.props.me.hp > 0)
+        if(this.props.me.character.hp > 0)
             switch(keyCode){
                 case 65:
-                    this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me, this.props.me.abilities.find(ability=>ability.name==='Basic Attack'))
+                    this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me, this.props.me.character.abilities.find(ability=>ability.name==='Attack'))
                     break
                 case 38:
                     this.moveUnit(this.props.me, Directions.UP)
@@ -301,30 +286,9 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
     let tiles = new Array(map.length).fill(null).map((item) => 
                     new Array(map[0].length).fill(false))
     if(player.x > -1){
-        let playerTile = map[player.x][player.y]
-        for(var i=1; i<getTileSight(player, playerTile); i++){
-            let sideLength = 3 + (2*(i-1))
-            let corner = {x: player.x-i, y:player.y-i}
-    
-            for(var y=0; y<sideLength;y++){
-                for(var x=0; x<sideLength; x++){
-                    let candidate = {x: corner.x+x, y: corner.y+y}
-                    if(candidate.y >= 0 && candidate.x >= 0 
-                        && candidate.x < map.length 
-                        && candidate.y < map[0].length){
-                            tiles[candidate.x][candidate.y] = true
-                        }
-                }
-            }
-        }
+        return compute(player.x, player.y, player.character.sight, map)
     }
-    
     return tiles
-}
-
-const getTileSight = (player:Player, tile:Tile) => {
-    //TODO: gear can reduce/increase this number
-    return 4
 }
 
 const styles = {
@@ -363,5 +327,6 @@ const styles = {
     levelBarOuter: {
         height:'0.25em',
         background: AppStyles.colors.white
-    }
+    },
+    unitFrame: {position: 'absolute' as 'absolute', top: '0px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' as 'column', alignItems: 'center'}
 }
