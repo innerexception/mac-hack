@@ -1,3 +1,5 @@
+import AppStyles from "./client/AppStyles";
+
 export const ApiUrl= 'wss://services.cryptonomical.com:3334'
 export const ReducerActions= {
     PLAYER_AVAILABLE: 'ma',
@@ -70,10 +72,11 @@ export const EmptyTile = {
     type: TileType.GRID,
     subType: '',
     playerId: '',
-    minionId: '',
-    firewallId: '',
-    minionSpawnerId: '',
-    hubId:''
+    teamColor: AppStyles.colors.grey1,
+    isFirewall: false,
+    isSpawner: false,
+    isCharacterSpawn: false,
+    captureTicks: 0
 }
 
 export const Characters = [
@@ -131,8 +134,8 @@ export const Characters = [
         id: 'Technician',
         hp: 4,
         maxHp: 4,
-        move: 3,
-        maxMove: 3,
+        move: 30,
+        maxMove: 30,
         abilities: [
             {
                 name:'Attack',

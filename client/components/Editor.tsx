@@ -29,24 +29,34 @@ export default class Editor extends React.Component {
     setTileMinionSpawn = () => {
         let newTile = {
             ...this.state.selectedTile,
-            minionSpawnerId: this.state.selectedTile.minionSpawnerId === 'red' ? 'blue' : 'red'
+            isSpawner: !this.state.selectedTile.isSpawner
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map, selectedTile:newTile})
     }
 
-    setTileHub = () => {
+    setTilePlayerSpawn = () => {
         let newTile = {
             ...this.state.selectedTile,
-            hubId: this.state.selectedTile.hubId === 'red' ? 'blue' : 'red'
+            isCharacterSpawn: !this.state.selectedTile.isCharacterSpawn
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map, selectedTile:newTile})
     }
+
+    setTileColor = () => {
+        let newTile = {
+            ...this.state.selectedTile,
+            teamColor: this.state.selectedTile.teamColor === AppStyles.colors.white ? AppStyles.colors.grey2 : AppStyles.colors.white
+        }
+        this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
+        this.setState({map: this.state.map, selectedTile:newTile})
+    }
+
     setTileFirewall = () => {
         let newTile = {
             ...this.state.selectedTile,
-            firewallId: this.state.selectedTile.firewallId === 'red' ? 'blue' : 'red'
+            isFirewall: !this.state.selectedTile.isFirewall
         }
         this.state.map[this.state.selectedTile.x][this.state.selectedTile.y] = newTile
         this.setState({map: this.state.map, selectedTile:newTile})
@@ -107,8 +117,9 @@ export default class Editor extends React.Component {
                             </div>
                         )}
                     </div>
-                    {LightButton(true, this.setTileMinionSpawn, 'Minion Spawner')}
-                    {LightButton(true, this.setTileHub, 'Hub')}
+                    {LightButton(true, this.setTileMinionSpawn, 'Net Spawner')}
+                    {LightButton(true, this.setTilePlayerSpawn, 'Player Spawner')}
+                    {LightButton(true, this.setTileColor, 'Team')}
                     {LightButton(true, this.setTileFirewall, 'Firewall')}
                     {LightButton(true, this.clearTile, 'Clear')}
                 </div>
@@ -124,9 +135,10 @@ export default class Editor extends React.Component {
                                         }} 
                                         onClick={()=>this.setTileType(tile)}> 
                                         <div style={{fontFamily:'Grid', color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em'}}>{tile.subType}</div>
-                                        {tile.minionSpawnerId && <div style={{fontFamily:'Item', color: tile.minionSpawnerId, fontSize:'0.5em', textAlign:'left', position:'absolute', top:0,left:0}}>a</div>}
-                                        {tile.firewallId && <div style={{fontFamily:'Item', color: tile.firewallId, fontSize:'0.5em', textAlign:'left',position:'absolute', top:0,left:0}}>b</div>}
-                                        {tile.hubId && <div style={{fontFamily:'Item', color: tile.hubId, fontSize:'0.5em', textAlign:'left',position:'absolute', top:0,left:0}}>c</div>}
+                                        {tile.isSpawner && <div style={{fontFamily:'Item', color: tile.teamColor, fontSize:'0.5em', textAlign:'left', position:'absolute', top:0,left:0}}>a</div>}
+                                        {tile.isFirewall && <div style={{fontFamily:'Item', color: tile.teamColor, fontSize:'0.5em', textAlign:'left',position:'absolute', bottom:0,left:0}}>b</div>}
+                                        {tile.type === TileType.HUB && <div style={{fontFamily:'Item', color: tile.teamColor, fontSize:'0.5em', textAlign:'left',position:'absolute', top:0,right:0}}>c</div>}
+                                        {tile.isCharacterSpawn && <div style={{fontFamily:'Item', color: tile.teamColor, fontSize:'0.5em', textAlign:'left',position:'absolute', bottom:0,right:0}}>d</div>}
                                     </div>
                                 )}
                             </div>

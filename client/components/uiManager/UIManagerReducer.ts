@@ -46,15 +46,14 @@ const getSPSession = (currentUser:Player) => {
     const newSession = {
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
+        activePlayerId: currentUser.id,
         players: [currentUser],
         map: TestGround.map((row, i) => 
                 row.map((tile:Tile, j) => {
                     return {
                         ...tile,
                         x:i,
-                        y:j,
-                        firewallId: tile.firewallId ? 'gray' : '',
-                        minionId: tile.type === TileType.NETWORK_LINE ? 'gray' : ''
+                        y:j
                     }
                 })
             ),

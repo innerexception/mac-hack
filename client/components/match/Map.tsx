@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { onMovePlayer, onAttackTile, onUpdatePlayer, onChooseCharacter } from '../uiManager/Thunks'
+import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTurn } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, TileType, Directions, Characters } from '../../../enum'
+import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
 import { compute } from '../Util';
@@ -86,14 +86,15 @@ export default class Map extends React.Component<Props, State> {
         return <div style={styles.tileInfo}>
                     <h4>{player.name}</h4>
                     {player.character?
-                        <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
-                            <h4>HP: {player.character.hp}</h4>
-                            <h4>Arm: {player.character.armor}</h4>
-                            <h4>Moves: {player.character.move} / {player.character.maxMove}</h4>
+                        <div style={{display:'flex',width:'100%', justifyContent:'space-between'}}>
                             <div>
-                                {this.getActionButtons(player)}
+                                <h4>HP: {player.character.hp}</h4>
+                                <h4>Arm: {player.character.armor}</h4>
+                                <h4>Moves: {player.character.move} / {player.character.maxMove}</h4>
                             </div>
-                        </div> : 
+                            {this.getActionButtons(player)}
+                        </div>
+                         : 
                         <div>
                             <h4>Dead. Respawn in {player.respawnTurns} turns.</h4>
                         </div>
@@ -120,7 +121,6 @@ export default class Map extends React.Component<Props, State> {
                 player.x = candidateTile.x
                 player.y = candidateTile.y
                 player.character.move--
-               
                 candidateTile.playerId = player.id
                 this.setState({visibleTiles: getVisibleTilesOfPlayer(player, this.props.map)}, 
                     ()=>onMovePlayer(player, this.props.activeSession));
@@ -146,6 +146,11 @@ export default class Map extends React.Component<Props, State> {
         return true
     }
 
+    getAbilityHandler = (player:Player, ability:Ability) => {
+        if(ability.effect === StatusEffect.CAPTURE) return ()=>onApplyCapture(player, this.props.activeSession)
+        else return ()=>this.showAttackTiles(player, ability)
+    }
+
     showAttackTiles = (player:Player, ability:Ability) => {
         let highlightTiles = getTilesInRange(player, ability, this.props.map)
         this.setState({attackingPlayer: true, highlightTiles})
@@ -165,9 +170,12 @@ export default class Map extends React.Component<Props, State> {
         if(player){
             let isOwner = player.id === this.props.me.id
             if(isOwner){
-                let buttons = player.character.abilities.map(ability=>LightButton(ability.cdr === 0, ()=>this.showAttackTiles(player, ability), ability.name))
-                return <div>    
+                let buttons = player.character.abilities.map(ability=>
+                    LightButton(getAbilityState(ability, this.props.map[player.x][player.y], player), this.getAbilityHandler(player, ability), ability.name))
+                return <div style={{display:'flex', flexDirection:'column', flexWrap:'wrap', width:'50%'}}>    
                             {buttons}
+                            {this.props.activeSession.map[player.x][player.y].isCharacterSpawn && LightButton(true, ()=>this.setState({showCharacterChooser:true}), 'Change')}
+                            {LightButton(this.props.me.id === this.props.activeSession.activePlayerId, ()=>onEndTurn(this.props.activeSession), 'End Turn')}
                        </div>
             }
         }
@@ -254,8 +262,8 @@ const getUnitOpacity = (player:Player, me:Player, visibleTiles: Array<Array<bool
 }
 
 const getTileBackgroundColor = (tile:Tile) => {
-    if(tile.type === TileType.NETWORK_LINE)
-        return tile.minionId
+    if(tile.type === TileType.NETWORK_LINE || tile.isFirewall || tile.isSpawner || tile.type === TileType.HUB)
+        return tile.teamColor
     else return 'transparent'
 }
 
@@ -289,6 +297,13 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
         return compute(player.x, player.y, player.character.sight, map)
     }
     return tiles
+}
+
+const getAbilityState = (ability:Ability, tile:Tile, player:Player) => {
+    if(ability.effect === StatusEffect.CAPTURE && tile.isFirewall && tile.teamColor !== player.teamColor && ability.cdr === 0){
+        return true
+    }
+    else return ability.cdr === 0
 }
 
 const styles = {

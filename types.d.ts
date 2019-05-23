@@ -60,10 +60,11 @@ interface Tile {
     type: TileType
     subType: string
     playerId: string
-    minionId: string
-    firewallId: string
-    hubId: string
-    minionSpawnerId: string
+    teamColor: string
+    isFirewall: boolean
+    isSpawner: boolean
+    isCharacterSpawn: boolean
+    captureTicks: number
 }
 
 interface Session {

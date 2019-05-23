@@ -16,4 +16,4 @@ export const Button = (enabled:boolean, handler:any, text:string) =>
     </div>
 
 export const LightButton = (enabled:boolean, handler:any, text:string) => 
-    <div onClick={handler} style={{...AppStyles.buttonInner, opacity: enabled ? 1 : 0.5, pointerEvents: enabled ? 'all' : 'none'}}>{text}</div>
+    <div onClick={handler} style={{...AppStyles.buttonInner, opacity: enabled ? 1 : 0.5, pointerEvents: enabled ? 'all' : 'none', textAlign:'center'}}>{text}</div>

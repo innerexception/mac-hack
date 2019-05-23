@@ -1,5 +1,5 @@
-import { dispatch } from '../../../client/App'
-import { ReducerActions, MatchStatus, TileType, TileSubType } from '../../../enum'
+import App, { dispatch } from '../../../client/App'
+import { ReducerActions, MatchStatus, StatusEffect } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import { toast } from './toast';
 import { getRandomInt } from '../Util';
@@ -52,14 +52,13 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
         ...session,
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
+        activePlayerId: currentUser.id,
         map: TestGround.map((row, i) => 
                 row.map((tile:Tile, j) => {
                     return {
                         ...tile,
                         x:i,
-                        y:j,
-                        firewallId: tile.firewallId ? 'gray' : '',
-                        minionId: tile.type === TileType.NETWORK_LINE ? 'gray' : ''
+                        y:j
                     }
                 })
             ),
@@ -92,6 +91,21 @@ export const onMatchTick = (session:Session) => {
         onEndTurn(session)
         return
     }
+    sendSessionTick(session)
+}
+
+export const onEndTurn = (session:Session) => {
+    session.ticks = 0
+    session.turn++
+    session.players.forEach((player, i)=>{
+        if(player.id===session.activePlayerId){
+            player.character.move = player.character.maxMove
+            session.activePlayerId = session.players[(i+1) % session.players.length].id
+        } 
+        player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
+        //TODO Check for any status to wear off
+    })
+
     //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     //check for new network line color orders and start a segment fill
     //check for capture progress on firewalls 
@@ -99,18 +113,7 @@ export const onMatchTick = (session:Session) => {
     //or hub (fully controlled network line touching) 
     //(capturing a final firewall causes unstoppable forward progress)
     //check victory
-    sendSessionTick(session)
-}
 
-const onEndTurn = (session:Session) => {
-    session.ticks = 0
-    session.turn++
-    session.players.forEach(player=>{
-        if(player.id===session.activePlayerId) player.character.move = player.character.maxMove
-        //TODO reduce cdr of abilities
-        //Check for any status to wear off
-        //Set next player active
-    })
     sendSessionUpdate(session)
 }
 
@@ -118,17 +121,35 @@ export const onUpdatePlayer = (player:Player, session:Session) => {
     sendReplaceMapPlayer(session, player)
 }
 
+export const onApplyCapture = (player:Player, session:Session) => {
+    let tile = session.map[player.x][player.y]
+    if(tile.isFirewall && tile.teamColor !== player.teamColor) {
+        tile.captureTicks++
+        if(tile.captureTicks > 2){
+            if(tile.teamColor == AppStyles.colors.grey1)
+                tile.teamColor = player.teamColor
+            else tile.teamColor = AppStyles.colors.grey1
+            tile.captureTicks = 0
+        }
+    }
+    player.character.abilities.forEach(ability=>{
+        if(ability.effect === StatusEffect.CAPTURE) ability.cdr = 1
+    })
+    //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn
+    
+    sendSessionUpdate(session)
+}
+
 export const onChooseCharacter = (player:Player, character:Character, session:Session) => {
     session.players.forEach(splayer=>{
         if(splayer.id===player.id){
             player.character = {...character}
             if(player.x===-1){
-                //TODO check if pad is clear
-                let hub
-                session.map.forEach(row=>row.forEach(tile=>{if(tile.type===TileType.HUB && tile.hubId === 'red' && player.teamColor === AppStyles.colors.white) hub=tile}))
-                player.x = hub.x-1
-                player.y = hub.y-1
-                session.map[hub.x][hub.y].playerId = player.id
+                let pad
+                session.map.forEach(row=>row.forEach(tile=>{if(tile.isCharacterSpawn && tile.teamColor === player.teamColor && !tile.playerId) pad = tile}))
+                player.x = pad.x
+                player.y = pad.y
+                session.map[pad.x][pad.y].playerId = player.id
             }
         } 
     })
