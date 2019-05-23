@@ -41,6 +41,7 @@ interface Ability {
     range: number
     radius: number
     cdr: number
+    maxCdr: number
     damage: number
     effect: StatusEffect
     description: string

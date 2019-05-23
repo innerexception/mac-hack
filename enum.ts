@@ -92,7 +92,8 @@ export const Characters = [
                 name:'Attack',
                 range: 3,
                 radius: 0,
-                cdr: 1,
+                cdr: 0,
+                maxCdr: 1,
                 damage: 1,
                 effect: StatusEffect.NONE,
                 description: 'Basic attack, range 3.'
@@ -101,7 +102,8 @@ export const Characters = [
                 name:'Long Shot',
                 range: 6,
                 radius: 0,
-                cdr: 3,
+                cdr:0,
+                maxCdr: 3,
                 damage: 2,
                 effect: StatusEffect.PIERCE,
                 description: 'Long range shot that pierces armor.'
@@ -110,7 +112,8 @@ export const Characters = [
                 name:'Snare',
                 range: 2,
                 radius: 0,
-                cdr: 3,
+                cdr:0,
+                maxCdr: 3,
                 damage: 0,
                 effect: StatusEffect.MOVES_MINUS_1,
                 description: 'Network snare that causes the target to lose movement.'
@@ -119,7 +122,8 @@ export const Characters = [
                 name:'Canister Shot',
                 range: 2,
                 radius: 1,
-                cdr: 3,
+                cdr:0,
+                maxCdr: 3,
                 damage: 1,
                 effect: StatusEffect.PIERCE,
                 description: 'A short range blast that pierces armor.'
@@ -141,7 +145,8 @@ export const Characters = [
                 name:'Attack',
                 range: 1,
                 radius: 0,
-                cdr: 1,
+                cdr:0,
+                maxCdr: 1,
                 damage: 1,
                 effect: StatusEffect.PIERCE,
                 description: 'Basic melee attack. Pierces armor.'
@@ -150,7 +155,8 @@ export const Characters = [
                 name:'Capture',
                 range: 0,
                 radius: 0,
-                cdr: 1,
+                cdr:0,
+                maxCdr: 1,
                 damage: 0,
                 effect: StatusEffect.CAPTURE,
                 description: 'Captures a network node.'
@@ -159,7 +165,8 @@ export const Characters = [
                 name:'Edit',
                 range: 0,
                 radius: 0,
-                cdr: 1,
+                cdr:0,
+                maxCdr: 1,
                 damage: 0,
                 effect: StatusEffect.EDIT_STREAM,
                 description: 'Changes the type of a network emitter.'
@@ -168,7 +175,8 @@ export const Characters = [
                 name:'Attract',
                 range: 2,
                 radius: 0,
-                cdr: 3,
+                cdr:0,
+                maxCdr: 3,
                 damage: 1,
                 effect: StatusEffect.PULL,
                 description: 'Pulls the target towards you.'

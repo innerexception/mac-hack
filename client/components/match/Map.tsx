@@ -182,7 +182,7 @@ export default class Map extends React.Component<Props, State> {
         return <span/>
     }
 
-    getUnitPortraitOfTile = (tile:Tile) => {
+    getPlayerPortrait = (tile:Tile) => {
         let tileUnit = this.props.activeSession.players.find(player=>player.id === tile.playerId)
         if(tileUnit){
             return <div style={{...styles.unitFrame, opacity: getUnitOpacity(tileUnit, this.props.me, this.state.visibleTiles)}} 
@@ -234,8 +234,15 @@ export default class Map extends React.Component<Props, State> {
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{fontFamily:'Grid', backgroundColor: getTileBackgroundColor(tile), color: AppStyles.colors.grey3, fontSize:'2em', lineHeight:'0.8em', opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
-                                            {tile.playerId && this.getUnitPortraitOfTile(tile)}
+                                            <div style={{position:'absolute', backgroundColor:'black', zIndex:2, top:0,left:0, opacity: 0.5, width:'100%', height: (tile.captureTicks*50)+'%'}}/>
+                                            <div style={{
+                                                fontFamily:'Grid', 
+                                                backgroundColor: getTileBackgroundColor(tile), 
+                                                color: AppStyles.colors.grey3, 
+                                                fontSize:'2em', 
+                                                lineHeight:'0.8em', 
+                                                opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
+                                            {tile.playerId && this.getPlayerPortrait(tile)}
                                         </div>
                                     )}
                                 </div>

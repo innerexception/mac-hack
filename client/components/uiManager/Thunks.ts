@@ -103,9 +103,8 @@ export const onEndTurn = (session:Session) => {
             session.activePlayerId = session.players[(i+1) % session.players.length].id
         } 
         player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
-        //TODO Check for any status to wear off
     })
-
+    //TODO Check for any status to wear off
     //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     //check for new network line color orders and start a segment fill
     //check for capture progress on firewalls 
@@ -113,6 +112,8 @@ export const onEndTurn = (session:Session) => {
     //or hub (fully controlled network line touching) 
     //(capturing a final firewall causes unstoppable forward progress)
     //check victory
+    //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn
+    
 
     sendSessionUpdate(session)
 }
@@ -133,10 +134,8 @@ export const onApplyCapture = (player:Player, session:Session) => {
         }
     }
     player.character.abilities.forEach(ability=>{
-        if(ability.effect === StatusEffect.CAPTURE) ability.cdr = 1
+        if(ability.effect === StatusEffect.CAPTURE) ability.cdr = ability.maxCdr
     })
-    //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn
-    
     sendSessionUpdate(session)
 }
 
