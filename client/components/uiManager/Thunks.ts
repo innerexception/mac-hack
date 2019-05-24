@@ -2,7 +2,7 @@ import App, { dispatch } from '../../../client/App'
 import { ReducerActions, MatchStatus, StatusEffect } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import { toast } from './toast';
-import { getAdjacentNetworkLine } from '../Util';
+import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
 
@@ -53,7 +53,9 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
             return {
                 ...tile,
                 x:i,
-                y:j
+                y:j,
+                virusColor: tile.isSpawner ? 'red' : '',
+                isCapturableBy: {}
             }
         }))
     const newSession = {
@@ -111,53 +113,71 @@ export const onEndTurn = (session:Session) => {
     //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     session.paths.forEach(path=>{
 
-        //walk every node in each path, 
-        //advance colors of sections by 1 position, 
-        //insert new sections at beginning of selected color
+        //walk every node in each path except the last one, 
+        path.nodes.forEach((node, i)=>{
+            if(i===path.nodes.length-1) return
+            //advance colors of sections by 1 position, 
+            if(i>0){
+                //0th element is the spawner
+                let previousNode = path.nodes[i-1]
+                node.virusColor = previousNode.virusColor
+            }
+        })
 
-        //insert new sections at ends
+        //special case for new insertion at ends of paths
         let currentEnd = path.nodes[path.nodes.length-1]
         //search the 4 directions from the end to find a tile of type Network Line that is not controlled by us
-        let nextTile = getAdjacentNetworkLine(currentEnd, session.map)
-        //in each pass, a path can only gain ground, and must properly remove a node from the losing path
-        if(nextTile.isFirewall){
-            //Must manually take firewalls
-            nextTile.isCapturableBy[currentEnd.teamColor] = true
-            //TODO when taking a firewall, add it to the apporiate path
+        let nextTile = getUncontrolledAdjacentNetworkLine(currentEnd, session.map)
+        if(!nextTile){
+            //we found a controlled firewall that was not added to the path yet, maybe
+            nextTile = getControlledFirewall(currentEnd, session.map)
+            if(nextTile){
+                //Firewall is added
+                nextTile.virusColor = currentEnd.virusColor
+                path.nodes.push(nextTile)
+            }
+            else{
+                //paths have met.
+                //Next tile is owned by other team. find other path
+                let otherPath = session.paths.find(path=>
+                    !!path.nodes.find(node=>node.x===nextTile.x && node.y===nextTile.y))
+                //Network line is taken depending on color, only winning cases covered
+                let capture = false
+    
+                if(nextTile.virusColor === 'r' && currentEnd.virusColor === 'b')
+                    capture = true
+                if(nextTile.virusColor === 'g' && currentEnd.virusColor === 'r')
+                    capture = true
+                if(nextTile.virusColor === 'b' && currentEnd.virusColor === 'g')
+                    capture = true
+                    
+                if(capture){
+                    //check if previous node was a firewall, and mark as uncappable by losing team
+                    if(currentEnd.isFirewall)
+                        currentEnd.isCapturableBy[nextTile.teamColor] = false
+                    
+                    //line is taken
+                    nextTile.teamColor = currentEnd.teamColor
+                    nextTile.virusColor = currentEnd.virusColor
+                    //remove tile from other path
+                    //add to our path
+                    path.nodes.push(otherPath.nodes.pop())
+                }
+            }
         }
-        if(nextTile.teamColor === AppStyles.colors.grey1) {
+        
+        if(nextTile.isFirewall){
+            if(nextTile.teamColor !== currentEnd.teamColor){
+                //Must manually take firewalls
+                nextTile.isCapturableBy[currentEnd.teamColor] = true
+            }
+        }
+        else if(nextTile.teamColor === AppStyles.colors.grey1) {
             //Next tile was unowned
             //Network line is taken
-            nextTile.teamColor === currentEnd.teamColor
+            nextTile.teamColor = currentEnd.teamColor
+            nextTile.virusColor = currentEnd.virusColor
             path.nodes.push(nextTile)
-        }
-        else{
-            //paths have met.
-            //Next tile is owned by other team. find other path
-            let otherPath = session.paths.find(path=>
-                !!path.nodes.find(node=>node.x===nextTile.x && node.y===nextTile.y))
-            //Network line is taken depending on color, only winning cases covered
-            let capture = false
-
-            if(nextTile.virusColor === 'r' && currentEnd.virusColor === 'b')
-                capture = true
-            if(nextTile.virusColor === 'g' && currentEnd.virusColor === 'r')
-                capture = true
-            if(nextTile.virusColor === 'b' && currentEnd.virusColor === 'g')
-                capture = true
-                
-            if(capture){
-                //check if previous node was a firewall, and mark as uncappable by losing team
-                if(currentEnd.isFirewall)
-                    currentEnd.isCapturableBy[nextTile.teamColor] = false
-                
-                //line is taken
-                nextTile.teamColor = currentEnd.teamColor
-                nextTile.virusColor = currentEnd.virusColor
-                //remove tile from other path
-                //add to our path
-                path.nodes.push(otherPath.nodes.pop())
-            }
         }
     })
     //check for capture progress on firewalls 

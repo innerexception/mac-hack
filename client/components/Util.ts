@@ -4,11 +4,24 @@ export const getRandomInt = (max:number) => Math.floor(Math.random() * Math.floo
 
 export const getId = ()=>Date.now() + ''+ Math.random()
 
-export const getAdjacentNetworkLine = (node:PathNode, map:Array<Array<Tile>>) => {
+export const getUncontrolledAdjacentNetworkLine = (node:Tile, map:Array<Array<Tile>>) => {
     let found
     for(var direction of FourCoordinatesArray){
-        let candidate = map[direction.x][direction.y]
-        if(candidate.type === TileType.NETWORK_LINE && candidate.teamColor !== node.tile.teamColor)
+        const candidateX = node.x + direction.x
+        let candidate = map[candidateX] && map[candidateX][node.y+direction.y]
+        if((candidate.type === TileType.NETWORK_LINE || candidate.isFirewall) && candidate.teamColor !== node.teamColor)
+            found = candidate
+    }
+    if(!found) debugger
+    return found as Tile
+}
+
+export const getControlledFirewall = (node:Tile, map:Array<Array<Tile>>) => {
+    let found
+    for(var direction of FourCoordinatesArray){
+        const candidateX = node.x + direction.x
+        let candidate = map[candidateX] && map[candidateX][node.y+direction.y]
+        if(candidate.isFirewall&& candidate.teamColor === node.teamColor)
             found = candidate
     }
     return found as Tile
@@ -16,6 +29,13 @@ export const getAdjacentNetworkLine = (node:PathNode, map:Array<Array<Tile>>) =>
 
 export const getInitialPaths = (map:Array<Array<Tile>>) => {
     //TODO: find all spawners, start an empty path for each one
+    let paths = new Array<Path>()
+    map.forEach(row=>row.forEach(tile => {
+        if(tile.isSpawner) {
+            paths.push({ nodes: [tile] })
+        }
+    }))
+    return paths
 }
 
 type Arc = [number, number];

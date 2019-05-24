@@ -1,6 +1,7 @@
 import { ReducerActions, MatchStatus, TileType } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import AppStyles from '../../AppStyles';
+import { getInitialPaths } from '../Util';
 
 const appReducer = (state = getInitialState(), action:any) => {
     switch (action.type) {
@@ -48,7 +49,9 @@ const getSPSession = (currentUser:Player) => {
             return {
                 ...tile,
                 x:i,
-                y:j
+                y:j,
+                virusColor: tile.isSpawner ? 'red' : '',
+                isCapturableBy: {}
             }
     }))
 

@@ -78,10 +78,12 @@ export const EmptyTile = {
     subType: '',
     playerId: '',
     teamColor: AppStyles.colors.grey1,
+    virusColor: '',
     isFirewall: false,
     isSpawner: false,
     isCharacterSpawn: false,
-    captureTicks: 0
+    captureTicks: 0,
+    isCapturableBy: {}
 }
 
 export const Characters = [

@@ -238,7 +238,7 @@ export default class Map extends React.Component<Props, State> {
                                             <div style={{
                                                 fontFamily:'Grid', 
                                                 backgroundColor: getTileBackgroundColor(tile), 
-                                                color: AppStyles.colors.grey3, 
+                                                color: getTileForegroundColor(tile), 
                                                 fontSize:'2em', 
                                                 lineHeight:'0.8em', 
                                                 opacity: getTerrainOpacity(tile, this.state.visibleTiles)}}>{tile.subType}</div>
@@ -272,6 +272,11 @@ const getTileBackgroundColor = (tile:Tile) => {
     if(tile.type === TileType.NETWORK_LINE || tile.isFirewall || tile.isSpawner || tile.type === TileType.HUB)
         return tile.teamColor
     else return 'transparent'
+}
+
+const getTileForegroundColor = (tile:Tile) => {
+    if(tile.type === TileType.NETWORK_LINE) return tile.virusColor
+    return AppStyles.colors.grey3
 }
 
 const getTerrainOpacity = (tile:Tile, visibleTiles: Array<Array<boolean>>) => {
