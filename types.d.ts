@@ -68,6 +68,15 @@ interface Tile {
     captureTicks: number
 }
 
+interface Path {
+    x: number
+    y: number
+    nextTile: Path
+    teamColor: string
+    teamColorEnd: boolean
+    virusColor: string
+}
+
 interface Session {
     sessionId: string
     hostPlayerId: string
@@ -75,6 +84,7 @@ interface Session {
     status: MatchStatus
     players: Array<Player>
     map: Array<Array<Tile>>
+    paths: Array<Path>
     ticks: number
     turnTickLimit: number
     turn: number

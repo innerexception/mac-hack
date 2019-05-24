@@ -101,11 +101,91 @@ export const onEndTurn = (session:Session) => {
         if(player.id===session.activePlayerId){
             player.character.move = player.character.maxMove
             session.activePlayerId = session.players[(i+1) % session.players.length].id
-        } 
+        }
         player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
     })
     //TODO Check for any status to wear off
     //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
+    // session.paths = session.paths.map(path=>{
+    //     let currentEnd = path.teamColorEnd
+    //     if(!currentEnd.nextTile.teamColorEnd){
+    //         //lines have not met yet, advance both team ends
+    //         currentEnds.forEach(pathTile=>{
+    //             let nextTile = pathTile.nextTile
+    //             if(nextTile.teamColor === AppStyles.colors.grey1) {
+    //                 //Next tile was unowned
+    //                 if(nextTile.isFirewall){
+    //                     //Must manually take firewalls
+    //                     nextTile.isCapturable = true
+    //                 }
+    //                 else{
+    //                     //Network line is taken
+    //                     nextTile.teamColor === pathTile.teamColor
+    //                     pathTile.teamColorEnd = false
+    //                     nextTile.teamColorEnd = true
+    //                 }
+    //             }
+    //         })
+    //     }
+    //     else{
+    //         //paths have met. only run once
+    //         let currentEnd = currentEnds[0]
+    //         let nextTile = currentEnd.nextTile
+    //         //Next tile is owned by other team.
+    //         if(nextTile.isFirewall){
+    //             //Must manually take firewalls
+    //             nextTile.isCapturable = true
+    //         }
+    //         else{
+    //             //Network line is taken, or lost depending on color
+    //             if(nextTile.virusColor === 'r'){
+    //                 if(currentEnd.virusColor === 'g'){
+    //                     //lose currentEnd
+    //                     currentEnd.teamColor = nextTile.teamColor
+    //                     currentEnd.teamColorEnd = nextTile.teamColor
+    //                     nextTile.teamColorEnd = false
+    //                 } 
+    //                 if( currentEnd.virusColor === 'b'){
+    //                     //line is taken
+    //                     nextTile.teamColor === currentEnd.teamColor
+    //                     currentEnd.teamColorEnd = false
+    //                     nextTile.teamColorEnd = true
+    //                 }
+    //                 //else nothing
+    //             }
+    //             if(nextTile.virusColor === 'g'){
+    //                 if(currentEnd.virusColor === 'r'){
+    //                     //lose currentEnd
+    //                     currentEnd.teamColor = nextTile.teamColor
+    //                     currentEnd.teamColorEnd = nextTile.teamColor
+    //                     nextTile.teamColorEnd = false
+    //                 } 
+    //                 if( currentEnd.virusColor === 'b'){
+    //                     //line is taken
+    //                     nextTile.teamColor === currentEnd.teamColor
+    //                     currentEnd.teamColorEnd = false
+    //                     nextTile.teamColorEnd = true
+    //                 }
+    //                 //else nothing
+    //             }
+    //             if(nextTile.virusColor === 'b'){
+    //                 if(currentEnd.virusColor === 'g'){
+    //                     //lose currentEnd
+    //                     currentEnd.teamColor = nextTile.teamColor
+    //                     currentEnd.teamColorEnd = nextTile.teamColor
+    //                     nextTile.teamColorEnd = false
+    //                 } 
+    //                 if( currentEnd.virusColor === 'r'){
+    //                     //line is taken
+    //                     nextTile.teamColor === currentEnd.teamColor
+    //                     currentEnd.teamColorEnd = false
+    //                     nextTile.teamColorEnd = true
+    //                 }
+    //                 //else nothing
+    //             }
+    //         }
+    //     }
+    // })
     //check for new network line color orders and start a segment fill
     //check for capture progress on firewalls 
     //(hacker present at a firewall touched by controlled network line and using capture ability) 
@@ -114,7 +194,6 @@ export const onEndTurn = (session:Session) => {
     //check victory
     //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn
     
-
     sendSessionUpdate(session)
 }
 
