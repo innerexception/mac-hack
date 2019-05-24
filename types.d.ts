@@ -62,19 +62,16 @@ interface Tile {
     subType: string
     playerId: string
     teamColor: string
+    virusColor: string
     isFirewall: boolean
     isSpawner: boolean
     isCharacterSpawn: boolean
     captureTicks: number
+    isCapturableBy: object
 }
 
 interface Path {
-    x: number
-    y: number
-    nextTile: Path
-    teamColor: string
-    teamColorEnd: boolean
-    virusColor: string
+    nodes: Array<Tile>
 }
 
 interface Session {

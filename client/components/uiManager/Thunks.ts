@@ -2,7 +2,7 @@ import App, { dispatch } from '../../../client/App'
 import { ReducerActions, MatchStatus, StatusEffect } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import { toast } from './toast';
-import { getRandomInt } from '../Util';
+import { getAdjacentNetworkLine } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
 
@@ -48,21 +48,22 @@ export const onLogin = (currentUser:Player, sessionId?:string) => {
 }
 
 export const onMatchStart = (currentUser:Player, session:Session) => {
+    const map = TestGround.map((row, i) => 
+        row.map((tile:Tile, j) => {
+            return {
+                ...tile,
+                x:i,
+                y:j
+            }
+        }))
     const newSession = {
         ...session,
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
         activePlayerId: currentUser.id,
-        map: TestGround.map((row, i) => 
-                row.map((tile:Tile, j) => {
-                    return {
-                        ...tile,
-                        x:i,
-                        y:j
-                    }
-                })
-            ),
+        map,
         ticks: 0,
+        paths: getInitialPaths(map),
         turnTickLimit: 15,
     }
 
@@ -105,88 +106,60 @@ export const onEndTurn = (session:Session) => {
         player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
     })
     //TODO Check for any status to wear off
+    
+    
     //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
-    // session.paths = session.paths.map(path=>{
-    //     let currentEnd = path.teamColorEnd
-    //     if(!currentEnd.nextTile.teamColorEnd){
-    //         //lines have not met yet, advance both team ends
-    //         currentEnds.forEach(pathTile=>{
-    //             let nextTile = pathTile.nextTile
-    //             if(nextTile.teamColor === AppStyles.colors.grey1) {
-    //                 //Next tile was unowned
-    //                 if(nextTile.isFirewall){
-    //                     //Must manually take firewalls
-    //                     nextTile.isCapturable = true
-    //                 }
-    //                 else{
-    //                     //Network line is taken
-    //                     nextTile.teamColor === pathTile.teamColor
-    //                     pathTile.teamColorEnd = false
-    //                     nextTile.teamColorEnd = true
-    //                 }
-    //             }
-    //         })
-    //     }
-    //     else{
-    //         //paths have met. only run once
-    //         let currentEnd = currentEnds[0]
-    //         let nextTile = currentEnd.nextTile
-    //         //Next tile is owned by other team.
-    //         if(nextTile.isFirewall){
-    //             //Must manually take firewalls
-    //             nextTile.isCapturable = true
-    //         }
-    //         else{
-    //             //Network line is taken, or lost depending on color
-    //             if(nextTile.virusColor === 'r'){
-    //                 if(currentEnd.virusColor === 'g'){
-    //                     //lose currentEnd
-    //                     currentEnd.teamColor = nextTile.teamColor
-    //                     currentEnd.teamColorEnd = nextTile.teamColor
-    //                     nextTile.teamColorEnd = false
-    //                 } 
-    //                 if( currentEnd.virusColor === 'b'){
-    //                     //line is taken
-    //                     nextTile.teamColor === currentEnd.teamColor
-    //                     currentEnd.teamColorEnd = false
-    //                     nextTile.teamColorEnd = true
-    //                 }
-    //                 //else nothing
-    //             }
-    //             if(nextTile.virusColor === 'g'){
-    //                 if(currentEnd.virusColor === 'r'){
-    //                     //lose currentEnd
-    //                     currentEnd.teamColor = nextTile.teamColor
-    //                     currentEnd.teamColorEnd = nextTile.teamColor
-    //                     nextTile.teamColorEnd = false
-    //                 } 
-    //                 if( currentEnd.virusColor === 'b'){
-    //                     //line is taken
-    //                     nextTile.teamColor === currentEnd.teamColor
-    //                     currentEnd.teamColorEnd = false
-    //                     nextTile.teamColorEnd = true
-    //                 }
-    //                 //else nothing
-    //             }
-    //             if(nextTile.virusColor === 'b'){
-    //                 if(currentEnd.virusColor === 'g'){
-    //                     //lose currentEnd
-    //                     currentEnd.teamColor = nextTile.teamColor
-    //                     currentEnd.teamColorEnd = nextTile.teamColor
-    //                     nextTile.teamColorEnd = false
-    //                 } 
-    //                 if( currentEnd.virusColor === 'r'){
-    //                     //line is taken
-    //                     nextTile.teamColor === currentEnd.teamColor
-    //                     currentEnd.teamColorEnd = false
-    //                     nextTile.teamColorEnd = true
-    //                 }
-    //                 //else nothing
-    //             }
-    //         }
-    //     }
-    // })
-    //check for new network line color orders and start a segment fill
+    session.paths.forEach(path=>{
+
+        //walk every node in each path, 
+        //advance colors of sections by 1 position, 
+        //insert new sections at beginning of selected color
+
+        //insert new sections at ends
+        let currentEnd = path.nodes[path.nodes.length-1]
+        //search the 4 directions from the end to find a tile of type Network Line that is not controlled by us
+        let nextTile = getAdjacentNetworkLine(currentEnd, session.map)
+        //in each pass, a path can only gain ground, and must properly remove a node from the losing path
+        if(nextTile.isFirewall){
+            //Must manually take firewalls
+            nextTile.isCapturableBy[currentEnd.teamColor] = true
+            //TODO when taking a firewall, add it to the apporiate path
+        }
+        if(nextTile.teamColor === AppStyles.colors.grey1) {
+            //Next tile was unowned
+            //Network line is taken
+            nextTile.teamColor === currentEnd.teamColor
+            path.nodes.push(nextTile)
+        }
+        else{
+            //paths have met.
+            //Next tile is owned by other team. find other path
+            let otherPath = session.paths.find(path=>
+                !!path.nodes.find(node=>node.x===nextTile.x && node.y===nextTile.y))
+            //Network line is taken depending on color, only winning cases covered
+            let capture = false
+
+            if(nextTile.virusColor === 'r' && currentEnd.virusColor === 'b')
+                capture = true
+            if(nextTile.virusColor === 'g' && currentEnd.virusColor === 'r')
+                capture = true
+            if(nextTile.virusColor === 'b' && currentEnd.virusColor === 'g')
+                capture = true
+                
+            if(capture){
+                //check if previous node was a firewall, and mark as uncappable by losing team
+                if(currentEnd.isFirewall)
+                    currentEnd.isCapturableBy[nextTile.teamColor] = false
+                
+                //line is taken
+                nextTile.teamColor = currentEnd.teamColor
+                nextTile.virusColor = currentEnd.virusColor
+                //remove tile from other path
+                //add to our path
+                path.nodes.push(otherPath.nodes.pop())
+            }
+        }
+    })
     //check for capture progress on firewalls 
     //(hacker present at a firewall touched by controlled network line and using capture ability) 
     //or hub (fully controlled network line touching) 

@@ -35,7 +35,12 @@ export const FourCoordinates = {
     DOWN: {x:0,y:1},
     UP: {x:0,y:-1}
 }
-export const FourCoordinatesArray = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]
+export const FourCoordinatesArray = [
+    {x:1,y:0},
+    {x:-1,y:0},
+    {x:0,y:1},
+    {x:0,y:-1}
+]
 export const EightCoordinates = {
     RIGHT:{x:1,y:0},
     UPRIGHT: {x:1, y:-1},

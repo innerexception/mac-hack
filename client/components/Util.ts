@@ -1,8 +1,22 @@
-import { TileType } from '../../enum'
+import { TileType, FourCoordinatesArray } from '../../enum'
 
 export const getRandomInt = (max:number) => Math.floor(Math.random() * Math.floor(max))
 
 export const getId = ()=>Date.now() + ''+ Math.random()
+
+export const getAdjacentNetworkLine = (node:PathNode, map:Array<Array<Tile>>) => {
+    let found
+    for(var direction of FourCoordinatesArray){
+        let candidate = map[direction.x][direction.y]
+        if(candidate.type === TileType.NETWORK_LINE && candidate.teamColor !== node.tile.teamColor)
+            found = candidate
+    }
+    return found as Tile
+}
+
+export const getInitialPaths = (map:Array<Array<Tile>>) => {
+    //TODO: find all spawners, start an empty path for each one
+}
 
 type Arc = [number, number];
 export const compute = (x: number, y: number, R: number, map:Array<Array<Tile>>) => {

@@ -43,23 +43,26 @@ const getInitialState = () => {
 
 const getSPSession = (currentUser:Player) => {
     //TODO: add AI players
+    const map= TestGround.map((row, i) => 
+        row.map((tile:Tile, j) => {
+            return {
+                ...tile,
+                x:i,
+                y:j
+            }
+    }))
+
     const newSession = {
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
         activePlayerId: currentUser.id,
         players: [currentUser],
-        map: TestGround.map((row, i) => 
-                row.map((tile:Tile, j) => {
-                    return {
-                        ...tile,
-                        x:i,
-                        y:j
-                    }
-                })
-            ),
+        map,
+        paths: getInitialPaths(map),
         ticks: 0,
         turnTickLimit: 15,
         isSinglePlayer: true
     }
+    
     return newSession
 }
