@@ -169,7 +169,7 @@ export const onEndTurn = (session:Session) => {
         if(nextTile.isFirewall){
             if(nextTile.teamColor !== currentEnd.teamColor){
                 //Must manually take firewalls
-                nextTile.isCapturableBy[currentEnd.teamColor] = true
+                nextTile.isCapturableBy[currentEnd.teamColor] = true //TODO make this limit capture action
             }
         }
         else if(nextTile.teamColor === AppStyles.colors.grey1) {

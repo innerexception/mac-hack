@@ -18,6 +18,7 @@ interface State {
     attackingPlayer: boolean
     showDescription: Player | null
     showCharacterChooser: boolean
+    showVirusChooser: boolean
     highlightTiles: Array<Array<boolean>>
     visibleTiles: Array<Array<boolean>>
 }
@@ -28,6 +29,7 @@ export default class Map extends React.Component<Props, State> {
         attackingPlayer: false,
         showDescription: null as null,
         showCharacterChooser: true,
+        showVirusChooser: false,
         highlightTiles: [[false]],
         visibleTiles: getVisibleTilesOfPlayer(this.props.me, this.props.map),
         playerElRef: React.createRef()
@@ -78,6 +80,22 @@ export default class Map extends React.Component<Props, State> {
                     )}
                 </div>
                 {Button(true, ()=>this.setState({showCharacterChooser:false}), 'Done')}
+            </div>
+        </div>
+
+    getVirusChooser = () => 
+        <div style={{...styles.disabled, display: 'flex'}}>
+            <div style={AppStyles.notification}>
+                <div style={{marginBottom:'0.5em'}}>
+                    <div>Choose a Virus</div>
+                    {Virii.map(virusColor => 
+                        <div>
+                            <div>{virusColor}</div>
+                            {LightButton(true, ()=>onChooseVirus(this.props.me, virusColor, this.props.activeSession), virusColor)}
+                        </div>
+                    )}
+                </div>
+                {Button(true, ()=>this.setState({showVirusChooser:false}), 'Done')}
             </div>
         </div>
 
@@ -169,12 +187,14 @@ export default class Map extends React.Component<Props, State> {
     getActionButtons = (player:Player) => {
         if(player){
             let isOwner = player.id === this.props.me.id
+            let tile = this.props.activeSession.map[player.x][player.y]
             if(isOwner){
                 let buttons = player.character.abilities.map(ability=>
                     LightButton(getAbilityState(ability, this.props.map[player.x][player.y], player), this.getAbilityHandler(player, ability), ability.name))
                 return <div style={{display:'flex', flexDirection:'column', flexWrap:'wrap', width:'50%'}}>    
                             {buttons}
-                            {this.props.activeSession.map[player.x][player.y].isCharacterSpawn && LightButton(true, ()=>this.setState({showCharacterChooser:true}), 'Change')}
+                            {tile.isCharacterSpawn && tile.teamColor === player.teamColor && LightButton(true, ()=>this.setState({showCharacterChooser:true}), 'Change Character')}
+                            {tile.isSpawner && tile.teamColor === player.teamColor && LightButton(true, ()=>this.setState({showVirusChooser: true}), 'Change Virus')}
                             {LightButton(this.props.me.id === this.props.activeSession.activePlayerId, ()=>onEndTurn(this.props.activeSession), 'End Turn')}
                        </div>
             }
@@ -251,6 +271,7 @@ export default class Map extends React.Component<Props, State> {
                     </div>
                     {this.getNotification()}
                     {this.state.showCharacterChooser && this.getCharacterChooser()}
+                    {this.state.showVirusChooser && this.getVirusChooser()}
                 </div>
                 <div style={{marginTop:'0.5em'}}>
                     Turn will end in {this.props.activeSession.turnTickLimit - this.props.activeSession.ticks} sec
