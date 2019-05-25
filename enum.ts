@@ -64,6 +64,8 @@ export enum StatusEffect {
     HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',EDIT_STREAM='EDIT_STREAM',PULL='PULL'
 }
 
+export const MaxRespawnTurns = 3
+
 export const Virii = ['red', 'green', 'blue']
 
 export const TileSubType = {

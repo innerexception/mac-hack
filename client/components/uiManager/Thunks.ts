@@ -1,5 +1,5 @@
 import App, { dispatch } from '../../../client/App'
-import { ReducerActions, MatchStatus, StatusEffect } from '../../../enum'
+import { ReducerActions, MatchStatus, StatusEffect, MaxRespawnTurns } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
 import { server } from '../../App'
@@ -81,13 +81,18 @@ export const onChooseVirus = (player:Player, color:string, session:Session) => {
     sendSessionUpdate(session)
 }
 
-export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
+export const onAttackTile = (attacker:Player, ability:Ability, tile:Tile, session:Session) => {
     const target = session.players.find(player=>player.id === tile.playerId)
     if(target){
-        //TODO add weapon accuracy to basic attacks? 
-        //target.hp -= attacker.weapon.atk - target.armor
+        target.character.hp -= ability.damage - target.character.armor
+        if(target.character.hp <= 0){
+            target.character = null
+            target.respawnTurns = MaxRespawnTurns
+        }
+        else {
+            //TODO apply ability status effect
+        }
         sendReplaceMapPlayer(session, target)
-        //TODO on other client, if your hp is ever < 0 you are teleported to the hub and are frozen for 20 secs
     } 
 
     sendReplaceMapPlayer(session, attacker)
@@ -146,17 +151,16 @@ export const onEndTurn = (session:Session) => {
                 path.nodes.push(nextTile)
             }
         }
-        
         if(nextTile.isFirewall){
             if(nextTile.teamColor !== currentEnd.teamColor){
                 //Must manually take firewalls
-                nextTile.isCapturableBy[currentEnd.teamColor] = true //TODO make this limit capture action
+                nextTile.isCapturableBy[currentEnd.teamColor] = true
             }
         }
         else if(nextTile.isSpawner){
             //deal hub damage
             session.hubDamage[nextTile.teamColor] ? session.hubDamage[nextTile.teamColor]++ : session.hubDamage[nextTile.teamColor]=1
-            console.log(session.hubDamage[nextTile.teamColor])
+            //TODO visual cue and ending the match
         }
         else if(nextTile.teamColor === AppStyles.colors.grey1) {
             //Next tile was unowned
@@ -194,9 +198,6 @@ export const onEndTurn = (session:Session) => {
             }
         }
     })
-    //check for capture progress on firewalls 
-    //(hacker present at a firewall touched by controlled network line and using capture ability) 
-    //or hub (fully controlled network line touching) 
     //(capturing a final firewall causes unstoppable forward progress)
     //check victory
     //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn

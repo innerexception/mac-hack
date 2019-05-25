@@ -14,7 +14,8 @@ interface Props {
 }
 
 interface State {
-    attackingPlayer: boolean
+    isPlayerAttacking: boolean
+    attackAbility: Ability | null
     showDescription: Player | null
     showCharacterChooser: boolean
     showVirusChooser: boolean
@@ -25,7 +26,8 @@ interface State {
 export default class Map extends React.Component<Props, State> {
 
     state = {
-        attackingPlayer: false,
+        isPlayerAttacking: false,
+        attackAbility: null as null,
         showDescription: null as null,
         showCharacterChooser: true,
         showVirusChooser: false,
@@ -40,7 +42,7 @@ export default class Map extends React.Component<Props, State> {
     }
 
     startMovePlayer = () => {
-        this.setState({attackingPlayer:false, highlightTiles:[[false]]});
+        this.setState({isPlayerAttacking:false, highlightTiles:[[false]]});
         if(this.state.playerElRef.current)
             (this.state.playerElRef.current as any).scrollIntoView({
                                                 behavior: 'smooth',
@@ -169,16 +171,16 @@ export default class Map extends React.Component<Props, State> {
 
     showAttackTiles = (player:Player, ability:Ability) => {
         let highlightTiles = getTilesInRange(player, ability, this.props.map)
-        this.setState({attackingPlayer: true, highlightTiles})
+        this.setState({isPlayerAttacking: true, attackAbility:ability, highlightTiles})
     }
 
     hideAttackTiles = () => {
-        this.setState({attackingPlayer: false, highlightTiles:[[false]]})
+        this.setState({isPlayerAttacking: false, highlightTiles:[[false]]})
     }
 
-    performAttackOnTile = (tile:Tile) => {
+    performAttackOnTile = (tile:Tile, ability:Ability) => {
         //TODO flash/shake tile's unit here with Posed?
-        onAttackTile(this.props.me, tile, this.props.activeSession)
+        onAttackTile(this.props.me, ability, tile, this.props.activeSession)
         this.hideAttackTiles()
     }
 
@@ -211,15 +213,15 @@ export default class Map extends React.Component<Props, State> {
     }
 
     getTileClickHandler = (tile:Tile) => {
-        if(this.state.attackingPlayer) return ()=>this.performAttackOnTile(tile)
-        return ()=>this.setState({attackingPlayer:null, highlightTiles:[[false]]})
+        if(this.state.isPlayerAttacking) return ()=>this.performAttackOnTile(tile, this.state.attackAbility)
+        return ()=>this.setState({isPlayerAttacking:null, highlightTiles:[[false]]})
     }
 
     handleKeyDown = (keyCode:number) =>{
         if(this.props.me.character.hp > 0)
             switch(keyCode){
                 case 65:
-                    this.state.attackingPlayer ? this.hideAttackTiles():this.showAttackTiles(this.props.me, this.props.me.character.abilities.find(ability=>ability.name==='Attack'))
+                    this.state.isPlayerAttacking ? this.hideAttackTiles():this.showAttackTiles(this.props.me, this.props.me.character.abilities.find(ability=>ability.name==='Attack'))
                     break
                 case 38:
                     this.moveUnit(this.props.me, Directions.UP)
