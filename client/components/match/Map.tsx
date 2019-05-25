@@ -3,7 +3,6 @@ import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTur
 import AppStyles from '../../AppStyles';
 import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii } from '../../../enum'
 import { Button, LightButton } from '../Shared'
-import { toast } from '../uiManager/toast';
 import { compute } from '../Util';
 
 interface Props {
@@ -164,6 +163,7 @@ export default class Map extends React.Component<Props, State> {
 
     getAbilityHandler = (player:Player, ability:Ability) => {
         if(ability.effect === StatusEffect.CAPTURE) return ()=>onApplyCapture(player, this.props.activeSession)
+        if(ability.effect === StatusEffect.EDIT_STREAM) return ()=>this.setState({showVirusChooser: true})
         else return ()=>this.showAttackTiles(player, ability)
     }
 
@@ -192,7 +192,6 @@ export default class Map extends React.Component<Props, State> {
                 return <div style={{display:'flex', flexDirection:'column', flexWrap:'wrap', width:'50%'}}>    
                             {buttons}
                             {tile.isCharacterSpawn && tile.teamColor === player.teamColor && LightButton(true, ()=>this.setState({showCharacterChooser:true}), 'Change Character')}
-                            {tile.isSpawner && tile.teamColor === player.teamColor && LightButton(true, ()=>this.setState({showVirusChooser: true}), 'Change Virus')}
                             {LightButton(this.props.me.id === this.props.activeSession.activePlayerId, ()=>onEndTurn(this.props.activeSession), 'End Turn')}
                        </div>
             }
@@ -331,10 +330,17 @@ const getVisibleTilesOfPlayer = (player:Player, map:Array<Array<Tile>>) => {
 }
 
 const getAbilityState = (ability:Ability, tile:Tile, player:Player) => {
-    if(ability.effect === StatusEffect.CAPTURE && tile.isFirewall && tile.teamColor !== player.teamColor && ability.cdr === 0){
-        return true
+    if(ability.effect === StatusEffect.CAPTURE){
+        if(tile.isFirewall && tile.teamColor !== player.teamColor && ability.cdr === 0 && tile.isCapturableBy[player.teamColor])
+            return true
+        else return false
+    } 
+    if(ability.effect === StatusEffect.EDIT_STREAM){
+        if(tile.isSpawner && tile.teamColor === player.teamColor)
+            return true
+        else return false
     }
-    else return ability.cdr === 0
+    return ability.cdr === 0
 }
 
 const styles = {

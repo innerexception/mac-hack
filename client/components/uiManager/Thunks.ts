@@ -1,7 +1,6 @@
 import App, { dispatch } from '../../../client/App'
 import { ReducerActions, MatchStatus, StatusEffect } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
-import { toast } from './toast';
 import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
@@ -116,18 +115,20 @@ export const onEndTurn = (session:Session) => {
     //TODO Check for any status to wear off
     
     
-    //TODO advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
+    //advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     session.paths.forEach(path=>{
 
         //walk every node in each path except the last one, 
+        let count = 0
         for(var i=0; i< path.nodes.length; i++){
-            //advance colors of sections by 1 position, 1 time
+            //advance colors of sections by 1 position, 3 times
             if(i>0){
                 //0th element is the spawner
                 let previousNode = path.nodes[i-1]
                 if(previousNode.virusColor !== path.nodes[i].virusColor){
                     path.nodes[i].virusColor = previousNode.virusColor
-                    break
+                    count++
+                    if(count > 2) break
                 }
             }
         }

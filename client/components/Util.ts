@@ -1,4 +1,10 @@
 import { TileType, FourCoordinatesArray } from '../../enum'
+import { Position, Toaster } from "@blueprintjs/core"
+
+export const toast = Toaster.create({
+    className: `recipe-toaster`,
+    position: Position.TOP,
+})
 
 export const getRandomInt = (max:number) => Math.floor(Math.random() * Math.floor(max))
 

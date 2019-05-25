@@ -1,20 +1,4 @@
 export default {
-    rowSpcCtr: {
-        display:'flex',
-        flexDirection: 'row',
-        alignItems:'center',
-        justifyContent: 'space-around',
-        flexWrap: 'wrap'
-    },
-    colSpcCtr: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-around'
-    },
-    flex: {
-        display:'flex'
-    },
     modal: {
         maxHeight:'80vh',
         overflow:'auto'
@@ -24,7 +8,18 @@ export default {
         grey1: '#d5d5d5',
         grey2: '#b3b3b3',
         grey3:'#5f5f5f',
-        black:'#252525'
+        black:'#252525',
+        lGreen: '#00a800',
+        dGreen: '#006500',
+        dBrown: '#653600',
+        lBrown: '#976536',
+        lBlue: '#0097ff',
+        dBlue: '#0000ca',
+        purple: '#360097',
+        pink: '#ff0097',
+        red: '#dc0000',
+        orange: '#ff6500',
+        yellow: '#ffff00'
     },
     window: {
         background: '#f3f3f3',
