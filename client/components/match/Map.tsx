@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTurn, onChooseVirus } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii } from '../../../enum'
+import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii, MatchStatus } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { compute } from '../Util';
 
@@ -51,12 +51,11 @@ export default class Map extends React.Component<Props, State> {
                                             })
     }
                 
-    getNotification = () => {
-        if(this.state.showDescription)
+    getNotification = (notification:string) => {
             return (
                 <div style={{...styles.disabled, display: 'flex'}}>
                     <div style={AppStyles.notification}>
-                        {Button(true, ()=>this.setState({showDescription:null}), 'Done')}
+                        <h3>{notification}</h3>
                     </div>
                 </div>
             )
@@ -101,19 +100,26 @@ export default class Map extends React.Component<Props, State> {
     getMyInfo = () => {
         let player = this.props.me
         return <div style={styles.tileInfo}>
-                    <h4>{player.name}</h4>
+                    <div>
+                        <div style={{display:'flex'}}>
+                            <h6>Team:</h6>
+                            <div style={{height:'1em', width:'1em', backgroundColor: player.teamColor}}/>
+                        </div>
+                        {player.character && 
+                        <div>
+                            <h6>{player.character.id}</h6>
+                            <h6>Moves: {player.character.move} / {player.character.maxMove}</h6>
+                        </div>}
+                    </div>
                     {player.character?
-                        <div style={{display:'flex',width:'100%', justifyContent:'space-between'}}>
-                            <div>
-                                <h4>HP: {player.character.hp}</h4>
-                                <h4>Arm: {player.character.armor}</h4>
-                                <h4>Moves: {player.character.move} / {player.character.maxMove}</h4>
-                            </div>
+                        <div style={{display:'flex', justifyContent:'space-between', width:'75%'}}>
                             {this.getActionButtons(player)}
                         </div>
                          : 
                         <div>
-                            <h4>Dead. Respawn in {player.respawnTurns} turns.</h4>
+                            {player.respawnTurns === 0 ? LightButton(true, ()=>this.setState({showCharacterChooser: true}), 'Respawn')
+                            :
+                            <h4> You are Dead. Respawn available in {player.respawnTurns} turns.</h4>}
                         </div>
                     }
                 </div>
@@ -253,7 +259,7 @@ export default class Map extends React.Component<Props, State> {
                                                 background: this.state.highlightTiles[x] && this.state.highlightTiles[x][y]===true ? AppStyles.colors.grey2 : 'transparent',
                                             }} 
                                             onClick={this.getTileClickHandler(tile)}>
-                                            <div style={{position:'absolute', backgroundColor:'black', zIndex:2, top:0,left:0, opacity: 0.5, width:'100%', height: (tile.captureTicks*50)+'%'}}/>
+                                            <div style={{position:'absolute', backgroundColor:'black', zIndex:2, top:0,left:0, opacity: 0.5, width:'100%', height: ((tile.captureTicks/tile.maxCaptureTicks)*100)+'%'}}/>
                                             <div style={{
                                                 fontFamily:'Grid', 
                                                 backgroundColor: getTileBackgroundColor(tile), 
@@ -268,9 +274,10 @@ export default class Map extends React.Component<Props, State> {
                             )}
                         </div>
                     </div>
-                    {this.getNotification()}
                     {this.state.showCharacterChooser && this.getCharacterChooser()}
                     {this.state.showVirusChooser && this.getVirusChooser()}
+                    {this.props.activeSession.status === MatchStatus.LOSE && this.getNotification("Your hub has been hacked!")}
+                    {this.props.activeSession.status === MatchStatus.WIN && this.getNotification("You have hacked the enemy hub!")}
                 </div>
                 <div style={{marginTop:'0.5em'}}>
                     Turn will end in {this.props.activeSession.turnTickLimit - this.props.activeSession.ticks} sec
@@ -382,5 +389,5 @@ const styles = {
         height:'0.25em',
         background: AppStyles.colors.white
     },
-    unitFrame: {position: 'absolute' as 'absolute', top: '0px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' as 'column', alignItems: 'center'}
+    unitFrame: {position: 'absolute' as 'absolute', top: '0px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' as 'column', alignItems: 'center', zIndex:3}
 }

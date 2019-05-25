@@ -27,7 +27,7 @@ export const ReducerActions= {
 
 export const PlayerRune = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
-export enum MatchStatus {ACTIVE='ACTIVE',WIN='WIN', SETUP='SETUP'}
+export enum MatchStatus {ACTIVE='ACTIVE',WIN='WIN', SETUP='SETUP', LOSE='LOSE'}
 export enum Directions {LEFT='LEFT', RIGHT='RIGHT', UP='UP', DOWN='DOWN'}
 export const FourCoordinates = {
     RIGHT:{x:1,y:0},
@@ -87,6 +87,7 @@ export const EmptyTile = {
     isSpawner: false,
     isCharacterSpawn: false,
     captureTicks: 0,
+    maxCaptureTicks: 2,
     isCapturableBy: {}
 }
 

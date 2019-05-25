@@ -67,6 +67,7 @@ interface Tile {
     isSpawner: boolean
     isCharacterSpawn: boolean
     captureTicks: number
+    maxCaptureTicks: number
     isCapturableBy: object
 }
 

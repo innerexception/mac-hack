@@ -18,7 +18,6 @@ export const getUncontrolledAdjacentNetworkLine = (node:Tile, map:Array<Array<Ti
         if((candidate.type === TileType.NETWORK_LINE || candidate.isFirewall || candidate.isSpawner) && candidate.teamColor !== node.teamColor)
             found = candidate
     }
-    if(!found) debugger
     return found as Tile
 }
 

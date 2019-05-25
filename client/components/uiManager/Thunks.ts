@@ -4,6 +4,7 @@ import * as TestGround from '../../assets/TestGround.json'
 import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
+import Match from '../match/Match';
 
 export const setUser = (currentUser:object) => {
     dispatch({
@@ -54,7 +55,8 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
                 x:i,
                 y:j,
                 virusColor: tile.isSpawner ? 'red' : '',
-                isCapturableBy: {}
+                isCapturableBy: {},
+                maxCaptureTicks: tile.type === TileType.HUB ? 10 : 2
             }
         }))
     const newSession = {
@@ -160,7 +162,15 @@ export const onEndTurn = (session:Session) => {
         else if(nextTile.isSpawner){
             //deal hub damage
             session.hubDamage[nextTile.teamColor] ? session.hubDamage[nextTile.teamColor]++ : session.hubDamage[nextTile.teamColor]=1
+            nextTile.captureTicks++
             //TODO visual cue and ending the match
+            let activePlayer = session.players.find(player=>player.id===session.activePlayerId)
+            if(session.hubDamage[nextTile.teamColor] > 10){
+                if(nextTile.teamColor === activePlayer.teamColor)
+                    session.status = MatchStatus.LOSE
+                else 
+                    session.status = MatchStatus.WIN
+            }
         }
         else if(nextTile.teamColor === AppStyles.colors.grey1) {
             //Next tile was unowned
@@ -213,7 +223,7 @@ export const onApplyCapture = (player:Player, session:Session) => {
     let tile = session.map[player.x][player.y]
     if(tile.isFirewall && tile.teamColor !== player.teamColor) {
         tile.captureTicks++
-        if(tile.captureTicks > 2){
+        if(tile.captureTicks > tile.maxCaptureTicks){
             if(tile.teamColor == AppStyles.colors.grey1)
                 tile.teamColor = player.teamColor
             else tile.teamColor = AppStyles.colors.grey1

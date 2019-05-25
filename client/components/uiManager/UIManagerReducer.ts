@@ -51,7 +51,8 @@ const getSPSession = (currentUser:Player) => {
                 x:i,
                 y:j,
                 virusColor: tile.isSpawner ? 'red' : '',
-                isCapturableBy: {}
+                isCapturableBy: {},
+                maxCaptureTicks: tile.type === TileType.HUB ? 10 : 2
             }
     }))
 
