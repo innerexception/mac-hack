@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTurn } from '../uiManager/Thunks'
+import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTurn, onChooseVirus } from '../uiManager/Thunks'
 import AppStyles from '../../AppStyles';
-import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect } from '../../../enum'
+import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { toast } from '../uiManager/toast';
 import { compute } from '../Util';
@@ -75,11 +75,10 @@ export default class Map extends React.Component<Props, State> {
                                     <h6>{ability.description}</h6>
                                 </div>
                             )}
-                            {LightButton(true, ()=>onChooseCharacter(this.props.me, character, this.props.activeSession), character.id)}
+                            {LightButton(true, ()=>{onChooseCharacter(this.props.me, character, this.props.activeSession); this.setState({showCharacterChooser:false})}, character.id)}
                         </div>
                     )}
                 </div>
-                {Button(true, ()=>this.setState({showCharacterChooser:false}), 'Done')}
             </div>
         </div>
 
@@ -91,11 +90,10 @@ export default class Map extends React.Component<Props, State> {
                     {Virii.map(virusColor => 
                         <div>
                             <div>{virusColor}</div>
-                            {LightButton(true, ()=>onChooseVirus(this.props.me, virusColor, this.props.activeSession), virusColor)}
+                            {LightButton(true, ()=>{onChooseVirus(this.props.me, virusColor, this.props.activeSession); this.setState({showVirusChooser:false})}, virusColor)}
                         </div>
                     )}
                 </div>
-                {Button(true, ()=>this.setState({showVirusChooser:false}), 'Done')}
             </div>
         </div>
 

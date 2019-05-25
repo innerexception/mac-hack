@@ -86,6 +86,7 @@ interface Session {
     turnTickLimit: number
     turn: number
     isSinglePlayer: boolean
+    hubDamage: object
 }
 
 interface RState {

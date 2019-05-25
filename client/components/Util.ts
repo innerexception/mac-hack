@@ -9,7 +9,7 @@ export const getUncontrolledAdjacentNetworkLine = (node:Tile, map:Array<Array<Ti
     for(var direction of FourCoordinatesArray){
         const candidateX = node.x + direction.x
         let candidate = map[candidateX] && map[candidateX][node.y+direction.y]
-        if((candidate.type === TileType.NETWORK_LINE || candidate.isFirewall) && candidate.teamColor !== node.teamColor)
+        if((candidate.type === TileType.NETWORK_LINE || candidate.isFirewall || candidate.isSpawner) && candidate.teamColor !== node.teamColor)
             found = candidate
     }
     if(!found) debugger

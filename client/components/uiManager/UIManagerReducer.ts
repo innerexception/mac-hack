@@ -64,7 +64,8 @@ const getSPSession = (currentUser:Player) => {
         paths: getInitialPaths(map),
         ticks: 0,
         turnTickLimit: 15,
-        isSinglePlayer: true
+        isSinglePlayer: true,
+        hubDamage: {}
     }
     
     return newSession

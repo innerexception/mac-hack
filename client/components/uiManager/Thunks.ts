@@ -67,6 +67,7 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
         ticks: 0,
         paths: getInitialPaths(map),
         turnTickLimit: 15,
+        hubDamage: {}
     }
 
     sendSessionUpdate(newSession)
@@ -74,6 +75,11 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
 
 export const onMovePlayer = (player:Player, session:Session) => {
     sendReplaceMapPlayer(session, player)
+}
+
+export const onChooseVirus = (player:Player, color:string, session:Session) => {
+    session.map[player.x][player.y].virusColor = color
+    sendSessionUpdate(session)
 }
 
 export const onAttackTile = (attacker:Player, tile:Tile, session:Session) => {
@@ -114,15 +120,17 @@ export const onEndTurn = (session:Session) => {
     session.paths.forEach(path=>{
 
         //walk every node in each path except the last one, 
-        path.nodes.forEach((node, i)=>{
-            if(i===path.nodes.length-1) return
-            //advance colors of sections by 1 position, 
+        for(var i=0; i< path.nodes.length; i++){
+            //advance colors of sections by 1 position, 1 time
             if(i>0){
                 //0th element is the spawner
                 let previousNode = path.nodes[i-1]
-                node.virusColor = previousNode.virusColor
+                if(previousNode.virusColor !== path.nodes[i].virusColor){
+                    path.nodes[i].virusColor = previousNode.virusColor
+                    break
+                }
             }
-        })
+        }
 
         //special case for new insertion at ends of paths
         let currentEnd = path.nodes[path.nodes.length-1]
@@ -136,34 +144,6 @@ export const onEndTurn = (session:Session) => {
                 nextTile.virusColor = currentEnd.virusColor
                 path.nodes.push(nextTile)
             }
-            else{
-                //paths have met.
-                //Next tile is owned by other team. find other path
-                let otherPath = session.paths.find(path=>
-                    !!path.nodes.find(node=>node.x===nextTile.x && node.y===nextTile.y))
-                //Network line is taken depending on color, only winning cases covered
-                let capture = false
-    
-                if(nextTile.virusColor === 'r' && currentEnd.virusColor === 'b')
-                    capture = true
-                if(nextTile.virusColor === 'g' && currentEnd.virusColor === 'r')
-                    capture = true
-                if(nextTile.virusColor === 'b' && currentEnd.virusColor === 'g')
-                    capture = true
-                    
-                if(capture){
-                    //check if previous node was a firewall, and mark as uncappable by losing team
-                    if(currentEnd.isFirewall)
-                        currentEnd.isCapturableBy[nextTile.teamColor] = false
-                    
-                    //line is taken
-                    nextTile.teamColor = currentEnd.teamColor
-                    nextTile.virusColor = currentEnd.virusColor
-                    //remove tile from other path
-                    //add to our path
-                    path.nodes.push(otherPath.nodes.pop())
-                }
-            }
         }
         
         if(nextTile.isFirewall){
@@ -172,12 +152,45 @@ export const onEndTurn = (session:Session) => {
                 nextTile.isCapturableBy[currentEnd.teamColor] = true //TODO make this limit capture action
             }
         }
+        else if(nextTile.isSpawner){
+            //deal hub damage
+            session.hubDamage[nextTile.teamColor] ? session.hubDamage[nextTile.teamColor]++ : session.hubDamage[nextTile.teamColor]=1
+            console.log(session.hubDamage[nextTile.teamColor])
+        }
         else if(nextTile.teamColor === AppStyles.colors.grey1) {
             //Next tile was unowned
             //Network line is taken
             nextTile.teamColor = currentEnd.teamColor
             nextTile.virusColor = currentEnd.virusColor
             path.nodes.push(nextTile)
+        }
+        else{
+            //paths have met.
+            //Next tile is owned by other team. find other path
+            let otherPath = session.paths.find(path=>
+                !!path.nodes.find(node=>node.x===nextTile.x && node.y===nextTile.y))
+            //Network line is taken depending on color, only winning cases covered
+            let capture = false
+
+            if(nextTile.virusColor === 'red' && currentEnd.virusColor === 'blue')
+                capture = true
+            if(nextTile.virusColor === 'green' && currentEnd.virusColor === 'red')
+                capture = true
+            if(nextTile.virusColor === 'blue' && currentEnd.virusColor === 'green')
+                capture = true
+                
+            if(capture){
+                //check if previous node was a firewall, and mark as uncappable by losing team
+                if(currentEnd.isFirewall)
+                    currentEnd.isCapturableBy[nextTile.teamColor] = false
+                
+                //line is taken
+                nextTile.teamColor = currentEnd.teamColor
+                nextTile.virusColor = currentEnd.virusColor
+                //remove tile from other path
+                //add to our path
+                path.nodes.push(otherPath.nodes.pop())
+            }
         }
     })
     //check for capture progress on firewalls 
