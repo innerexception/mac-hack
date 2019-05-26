@@ -70,10 +70,4 @@ hackers (switchable between deaths or at the hub. no items.)
 
 
 //TODOs
-//1. map with network lines
-//2. network lines filling
-//3. hacker on board
-//4. capturing firewalls, network lines filling
-//5. network lines type switching and conflict resolution
-//6. last mile and hub degradation
 //7. hacker special abilities

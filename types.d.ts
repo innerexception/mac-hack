@@ -13,6 +13,11 @@ declare enum StatusEffect {
     HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',EDIT_STREAM='EDIT_STREAM',PULL='PULL'
 }
 
+interface Tuple {
+    x: number
+    y: number
+}
+
 interface Player {
     name:string
     id:string
@@ -21,6 +26,7 @@ interface Player {
     character: Character
     x:number
     y:number
+    route?: Array<Tuple>
 }
 
 interface Character {

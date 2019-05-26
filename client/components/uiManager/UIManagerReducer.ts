@@ -1,7 +1,7 @@
 import { ReducerActions, MatchStatus, TileType } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import AppStyles from '../../AppStyles';
-import { getInitialPaths } from '../Util';
+import { getInitialPaths, getAIPlayer } from '../Util';
 
 const appReducer = (state = getInitialState(), action:any) => {
     switch (action.type) {
@@ -60,11 +60,11 @@ const getSPSession = (currentUser:Player) => {
         status: MatchStatus.ACTIVE,
         hostPlayerId: currentUser.id,
         activePlayerId: currentUser.id,
-        players: [currentUser],
+        players: [currentUser, getAIPlayer()],
         map,
         paths: getInitialPaths(map),
         ticks: 0,
-        turnTickLimit: 15,
+        turnTickLimit: 5,
         isSinglePlayer: true,
         hubDamage: {}
     }

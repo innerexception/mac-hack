@@ -1,10 +1,10 @@
-import App, { dispatch } from '../../../client/App'
-import { ReducerActions, MatchStatus, StatusEffect, MaxRespawnTurns } from '../../../enum'
+import { dispatch } from '../../../client/App'
+import { ReducerActions, MatchStatus, StatusEffect, MaxRespawnTurns, Characters, TileType } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
 import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
-import Match from '../match/Match';
+import AStar from '../AStar'
 
 export const setUser = (currentUser:object) => {
     dispatch({
@@ -67,7 +67,7 @@ export const onMatchStart = (currentUser:Player, session:Session) => {
         map,
         ticks: 0,
         paths: getInitialPaths(map),
-        turnTickLimit: 15,
+        turnTickLimit: 5,
         hubDamage: {}
     }
 
@@ -112,15 +112,37 @@ export const onMatchTick = (session:Session) => {
 export const onEndTurn = (session:Session) => {
     session.ticks = 0
     session.turn++
-    session.players.forEach((player, i)=>{
-        if(player.id===session.activePlayerId){
-            player.character.move = player.character.maxMove
-            session.activePlayerId = session.players[(i+1) % session.players.length].id
-        }
-        player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
-    })
-    //TODO Check for any status to wear off
     
+    //TODO run ai player turn
+    let activePlayer = session.players.find(player=>player.id===session.activePlayerId)
+    if(activePlayer.name === 'Bot'){
+        session.ticks = session.turnTickLimit
+        //stupid bot will just try to capture all the firewalls
+        if(activePlayer.x===-1) {
+            session = onChooseCharacter(activePlayer, Characters.find(char=>char.id==='Technician'), session, true)
+            activePlayer = session.players.find(player=>player.id===session.activePlayerId)
+        }
+        let currentTile = session.map[activePlayer.x][activePlayer.y]
+        if(activePlayer.route && activePlayer.route.length > 0){
+            let nextSpace = activePlayer.route.pop()
+            activePlayer.x = nextSpace.x
+            activePlayer.y = nextSpace.y
+            session = sendReplaceMapPlayer(session, activePlayer, true)
+        }
+        else if(currentTile.isFirewall && currentTile.teamColor !== activePlayer.teamColor){
+            session = onApplyCapture(activePlayer, session, true)
+        }
+        else if((currentTile.isFirewall && currentTile.teamColor === activePlayer.teamColor) || !currentTile.isFirewall){
+            let nextFirewall
+            session.map.forEach(row=>row.forEach(tile=>{
+                if(tile.isFirewall && tile.x !== currentTile.x && tile.y !== currentTile.y) nextFirewall = tile
+            }))
+            const astar = new AStar(nextFirewall.x, nextFirewall.y, (x:number, y:number)=>{ return session.map[x][y].type!==TileType.GAP })
+            activePlayer.route = astar.compute(activePlayer.x, activePlayer.y).reverse()
+        }
+    }
+
+    //TODO Check for any status to wear off
     
     //advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     session.paths.forEach(path=>{
@@ -163,7 +185,6 @@ export const onEndTurn = (session:Session) => {
             //deal hub damage
             session.hubDamage[nextTile.teamColor] ? session.hubDamage[nextTile.teamColor]++ : session.hubDamage[nextTile.teamColor]=1
             nextTile.captureTicks++
-            //TODO visual cue and ending the match
             let activePlayer = session.players.find(player=>player.id===session.activePlayerId)
             if(session.hubDamage[nextTile.teamColor] > 10){
                 if(nextTile.teamColor === activePlayer.teamColor)
@@ -208,10 +229,17 @@ export const onEndTurn = (session:Session) => {
             }
         }
     })
-    //(capturing a final firewall causes unstoppable forward progress)
-    //check victory
     //TODO, remove captureTicks from any firewall which is not occupied at the end of any turn
-    
+    let found = false
+    session.players.forEach((player, i)=>{
+        if(player.id===session.activePlayerId && !found){
+            player.character.move = player.character.maxMove
+            session.activePlayerId = session.players[(i+1) % session.players.length].id
+            found=true
+        }
+        player.character.abilities.forEach(ability=>ability.cdr > 0 && ability.cdr--)
+    })
+
     sendSessionUpdate(session)
 }
 
@@ -219,7 +247,7 @@ export const onUpdatePlayer = (player:Player, session:Session) => {
     sendReplaceMapPlayer(session, player)
 }
 
-export const onApplyCapture = (player:Player, session:Session) => {
+export const onApplyCapture = (player:Player, session:Session, noDispatch?:boolean) => {
     let tile = session.map[player.x][player.y]
     if(tile.isFirewall && tile.teamColor !== player.teamColor) {
         tile.captureTicks++
@@ -233,10 +261,11 @@ export const onApplyCapture = (player:Player, session:Session) => {
     player.character.abilities.forEach(ability=>{
         if(ability.effect === StatusEffect.CAPTURE) ability.cdr = ability.maxCdr
     })
+    if(noDispatch) return session
     sendSessionUpdate(session)
 }
 
-export const onChooseCharacter = (player:Player, character:Character, session:Session) => {
+export const onChooseCharacter = (player:Player, character:Character, session:Session, noDispatch?:boolean) => {
     session.players.forEach(splayer=>{
         if(splayer.id===player.id){
             player.character = {...character}
@@ -249,6 +278,7 @@ export const onChooseCharacter = (player:Player, character:Character, session:Se
             }
         } 
     })
+    if(noDispatch) return session 
     sendSessionUpdate(session)
 }
 
@@ -292,7 +322,7 @@ const sendSessionTick = (session:Session) => {
         })
 }
 
-const sendReplaceMapPlayer = (session:Session, player:Player) => {
+const sendReplaceMapPlayer = (session:Session, player:Player, noDispatch?:boolean) => {
     if(session.isSinglePlayer){
         session.players.forEach(splayer=>{
             if(splayer.id === player.id){
@@ -304,6 +334,7 @@ const sendReplaceMapPlayer = (session:Session, player:Player) => {
                 splayer = {...player}
             } 
         })
+        if(noDispatch) return session
         dispatch({
             type: ReducerActions.MATCH_UPDATE,
             session: {...session}

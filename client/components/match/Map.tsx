@@ -3,7 +3,7 @@ import { onMovePlayer, onAttackTile, onApplyCapture, onChooseCharacter, onEndTur
 import AppStyles from '../../AppStyles';
 import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii, MatchStatus } from '../../../enum'
 import { Button, LightButton } from '../Shared'
-import { compute } from '../Util';
+import { compute } from '../Fov';
 
 interface Props {
     activeSession: Session
