@@ -160,15 +160,25 @@ export const onEndTurn = (session:Session) => {
         }
         let currentTile = session.map[activePlayer.x][activePlayer.y]
         if(activePlayer.route && activePlayer.route.length > 0){
-            let nextSpace = activePlayer.route.shift()
-            if(!getObstructionAt({x:nextSpace.x, y:nextSpace.y}, session.map)){
-                activePlayer.x = nextSpace.x
-                activePlayer.y = nextSpace.y
-            }
-            else {
-                let destination = activePlayer.route[0]
-                const astar = new AStar(destination.x, destination.y, (x:number, y:number)=>{ return session.map[x][y].type!==TileType.GAP })
-                activePlayer.route = astar.compute(activePlayer.x, activePlayer.y)
+            for(var moves=activePlayer.character.move; moves > 0;moves--){
+                //TODO: fire these async
+                let nextSpace = activePlayer.route.shift()
+                if(nextSpace){
+                    if(!getObstructionAt({x:nextSpace.x, y:nextSpace.y}, session.map)){
+                        activePlayer.x = nextSpace.x
+                        activePlayer.y = nextSpace.y
+                    }
+                    else {
+                        let destination = activePlayer.route[activePlayer.route.length-1]
+                        const astar = new AStar(destination.x, destination.y, (x:number, y:number)=>{ return session.map[x][y].type!==TileType.GAP })
+                        activePlayer.route = astar.compute(activePlayer.x, activePlayer.y)
+                        nextSpace = activePlayer.route.shift()
+                        if(!getObstructionAt({x:nextSpace.x, y:nextSpace.y}, session.map)){
+                            activePlayer.x = nextSpace.x
+                            activePlayer.y = nextSpace.y
+                        }
+                    }
+                }
             }
             session = sendReplaceMapPlayer(session, activePlayer, true)
         }
