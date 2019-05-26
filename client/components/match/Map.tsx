@@ -4,6 +4,7 @@ import AppStyles from '../../AppStyles';
 import { FourCoordinatesArray, TileType, Directions, Characters, StatusEffect, Virii, MatchStatus } from '../../../enum'
 import { Button, LightButton } from '../Shared'
 import { compute } from '../Fov';
+import { getObstructionAt } from '../Util';
 
 interface Props {
     activeSession: Session
@@ -139,7 +140,7 @@ export default class Map extends React.Component<Props, State> {
                 case Directions.RIGHT: candidateTile.x++
                      break
             }
-            if(!this.getObstruction(candidateTile.x, candidateTile.y)){
+            if(!getObstructionAt({x:candidateTile.x, y:candidateTile.y}, this.props.activeSession.map)){
                 candidateTile = {...this.props.map[candidateTile.x][candidateTile.y]}
                 player.x = candidateTile.x
                 player.y = candidateTile.y
@@ -155,18 +156,6 @@ export default class Map extends React.Component<Props, State> {
                         })
             }
         }
-    }
-
-    getObstruction = (x:number, y:number) => {
-        let tile = this.props.map[x][y]
-        if(tile){
-            if(tile.playerId) return true
-            if(tile.type === TileType.GAP){
-                return true 
-            } 
-            return false
-        }
-        return true
     }
 
     getAbilityHandler = (player:Player, ability:Ability) => {

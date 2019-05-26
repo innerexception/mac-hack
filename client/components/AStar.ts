@@ -135,7 +135,7 @@ export default class AStar extends Path {
 			coords.push({x:item.x, y:item.y});
 			item = item.prev;
         }
-        
+        coords.shift()
         return coords
 	}
 

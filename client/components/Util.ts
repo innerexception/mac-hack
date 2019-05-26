@@ -7,6 +7,11 @@ export const toast = Toaster.create({
     position: Position.TOP,
 })
 
+export const getObstructionAt = (coords:Tuple, map:Array<Array<Tile>>) => {
+    let tile = map[coords.x][coords.y]
+    return tile && tile.type === TileType.GAP || tile.playerId
+}
+
 export const getAIPlayer = () => {
     return {
         name:'Bot',

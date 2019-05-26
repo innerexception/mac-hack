@@ -1,7 +1,7 @@
 import { dispatch } from '../../../client/App'
 import { ReducerActions, MatchStatus, StatusEffect, MaxRespawnTurns, Characters, TileType } from '../../../enum'
 import * as TestGround from '../../assets/TestGround.json'
-import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall } from '../Util';
+import { getUncontrolledAdjacentNetworkLine, getInitialPaths, getControlledFirewall, getObstructionAt } from '../Util';
 import { server } from '../../App'
 import AppStyles from '../../AppStyles';
 import AStar from '../AStar'
@@ -86,17 +86,53 @@ export const onChooseVirus = (player:Player, color:string, session:Session) => {
 export const onAttackTile = (attacker:Player, ability:Ability, tile:Tile, session:Session) => {
     const target = session.players.find(player=>player.id === tile.playerId)
     if(target){
-        target.character.hp -= ability.damage - target.character.armor
+        target.character.hp -= ability.damage - (ability.effect === StatusEffect.PIERCE ?  0 : target.character.armor)
         if(target.character.hp <= 0){
             target.character = null
             target.respawnTurns = MaxRespawnTurns
         }
         else {
             //TODO apply ability status effect
+            let candidateTuple
+            switch(ability.effect){
+                case StatusEffect.ABILITY_LOCK: 
+                case StatusEffect.CDR:
+                case StatusEffect.MOVES_MINUS_1:
+                case StatusEffect.PULL:
+                    if(target.y===attacker.y){
+                        if(target.x > attacker.x) candidateTuple = {x: target.x-1, y:target.y}
+                        else candidateTuple = {x: target.x+1, y:target.y}
+                    }
+                    else{
+                        if(target.y > attacker.y) candidateTuple = {x: target.x, y:target.y-1}
+                        else candidateTuple = {x: target.x, y:target.y+1}
+                    }
+                    if(!getObstructionAt(candidateTuple, session.map)){
+                        target.x=candidateTuple.x
+                        target.y=candidateTuple.y
+                        delete target.route
+                    }
+                    break
+                case StatusEffect.PUSH:
+                    if(target.y===attacker.y){
+                        if(target.x > attacker.x) candidateTuple = {x: target.x+1, y:target.y}
+                        else candidateTuple = {x: target.x-1, y:target.y}
+                    }
+                    else{
+                        if(target.y > attacker.y) candidateTuple = {x: target.x, y:target.y+1}
+                        else candidateTuple = {x: target.x, y:target.y-1}
+                    }
+                    if(!getObstructionAt(candidateTuple, session.map)){
+                        target.x=candidateTuple.x
+                        target.y=candidateTuple.y
+                        delete target.route
+                    }
+                    break
+
+            }
         }
         sendReplaceMapPlayer(session, target)
     } 
-
     sendReplaceMapPlayer(session, attacker)
 }
 
@@ -124,9 +160,16 @@ export const onEndTurn = (session:Session) => {
         }
         let currentTile = session.map[activePlayer.x][activePlayer.y]
         if(activePlayer.route && activePlayer.route.length > 0){
-            let nextSpace = activePlayer.route.pop()
-            activePlayer.x = nextSpace.x
-            activePlayer.y = nextSpace.y
+            let nextSpace = activePlayer.route.shift()
+            if(!getObstructionAt({x:nextSpace.x, y:nextSpace.y}, session.map)){
+                activePlayer.x = nextSpace.x
+                activePlayer.y = nextSpace.y
+            }
+            else {
+                let destination = activePlayer.route[0]
+                const astar = new AStar(destination.x, destination.y, (x:number, y:number)=>{ return session.map[x][y].type!==TileType.GAP })
+                activePlayer.route = astar.compute(activePlayer.x, activePlayer.y)
+            }
             session = sendReplaceMapPlayer(session, activePlayer, true)
         }
         else if(currentTile.isFirewall && currentTile.teamColor !== activePlayer.teamColor){
@@ -135,10 +178,10 @@ export const onEndTurn = (session:Session) => {
         else if((currentTile.isFirewall && currentTile.teamColor === activePlayer.teamColor) || !currentTile.isFirewall){
             let nextFirewall
             session.map.forEach(row=>row.forEach(tile=>{
-                if(tile.isFirewall && tile.x !== currentTile.x && tile.y !== currentTile.y) nextFirewall = tile
+                if(tile.isFirewall && tile.x !== currentTile.x && tile.y !== currentTile.y && tile.teamColor !== activePlayer.teamColor) nextFirewall = tile
             }))
             const astar = new AStar(nextFirewall.x, nextFirewall.y, (x:number, y:number)=>{ return session.map[x][y].type!==TileType.GAP })
-            activePlayer.route = astar.compute(activePlayer.x, activePlayer.y).reverse()
+            activePlayer.route = astar.compute(activePlayer.x, activePlayer.y)
         }
     }
 

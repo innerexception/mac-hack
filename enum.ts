@@ -61,7 +61,9 @@ export enum TileType {
 }
 
 export enum StatusEffect {
-    HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',EDIT_STREAM='EDIT_STREAM',PULL='PULL'
+    HP='HP', HP5='HP5', CDR='CDR', CDR5='CDR5', MOVES_MINUS_1='MOVES_MINUS_1', 
+    ABILITY_LOCK='ABILITY_LOCK', NONE='NONE', PIERCE='PIERCE', CAPTURE='CAPTURE',
+    EDIT_STREAM='EDIT_STREAM',PULL='PULL', PUSH='PUSH'
 }
 
 export const MaxRespawnTurns = 3
@@ -154,16 +156,6 @@ export const Characters = [
         maxMove: 30,
         abilities: [
             {
-                name:'Attack',
-                range: 1,
-                radius: 0,
-                cdr:0,
-                maxCdr: 1,
-                damage: 1,
-                effect: StatusEffect.PIERCE,
-                description: 'Basic melee attack. Pierces armor.'
-            },
-            {
                 name:'Capture',
                 range: 0,
                 radius: 0,
@@ -189,9 +181,19 @@ export const Characters = [
                 radius: 0,
                 cdr:0,
                 maxCdr: 3,
-                damage: 1,
+                damage: 0,
                 effect: StatusEffect.PULL,
                 description: 'Pulls the target towards you.'
+            },
+            {
+                name:'Repel',
+                range: 2,
+                radius: 0,
+                cdr:0,
+                maxCdr: 3,
+                damage: 0,
+                effect: StatusEffect.PUSH,
+                description: 'Pushes the target away from you.'
             },
         ],
         passives: [],
