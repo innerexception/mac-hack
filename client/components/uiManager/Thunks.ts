@@ -113,7 +113,7 @@ export const onEndTurn = (session:Session) => {
     session.ticks = 0
     session.turn++
     
-    //TODO run ai player turn
+    //run ai player turn
     let activePlayer = session.players.find(player=>player.id===session.activePlayerId)
     if(activePlayer.name === 'Bot'){
         session.ticks = session.turnTickLimit
@@ -143,6 +143,8 @@ export const onEndTurn = (session:Session) => {
     }
 
     //TODO Check for any status to wear off
+    //TODO 'edit virus' cdr is reduced by the number of your controlled firewalls in the lane
+    //TODO SP map(s), SP campign mode, SP-only AI units
     
     //advance all network lines by one if possible (possible = unopposed, or of a winning color takes a segment, cannot pass any uncontrolled firewall), 
     session.paths.forEach(path=>{
