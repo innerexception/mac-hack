@@ -43,7 +43,7 @@ const getInitialState = () => {
 }
 
 const getSPSession = (currentUser:Player) => {
-    //TODO: add AI players
+    
     const map= TestGround.map((row, i) => 
         row.map((tile:Tile, j) => {
             return {

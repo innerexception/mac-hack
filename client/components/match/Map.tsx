@@ -159,9 +159,11 @@ export default class Map extends React.Component<Props, State> {
     }
 
     getAbilityHandler = (player:Player, ability:Ability) => {
-        if(ability.effect === StatusEffect.CAPTURE) return ()=>onApplyCapture(player, this.props.activeSession)
-        if(ability.effect === StatusEffect.EDIT_STREAM) return ()=>this.setState({showVirusChooser: true})
-        else return ()=>this.showAttackTiles(player, ability)
+        switch(ability.effect){
+            case StatusEffect.CAPTURE: return ()=>onApplyCapture(player, this.props.activeSession)
+            case StatusEffect.EDIT_STREAM: return ()=>this.setState({showVirusChooser: true})
+        }
+        return ()=>this.showAttackTiles(player, ability)
     }
 
     showAttackTiles = (player:Player, ability:Ability) => {
@@ -311,8 +313,10 @@ const getTilesInRange = (player:Player, ability:Ability, map:Array<Array<Tile>>)
             candidateY += direction.y
             if(candidateY >= 0 && candidateX >= 0 
                 && candidateX < map.length 
-                && candidateY < map[0].length)
-                tiles[candidateX][candidateY] = true
+                && candidateY < map[0].length){
+                    tiles[candidateX][candidateY] = true
+                    
+                }
         }
     })
     return tiles

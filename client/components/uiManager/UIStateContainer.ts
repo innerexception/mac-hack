@@ -5,16 +5,8 @@ const mapStateToProps = (state:RState) => {
     return state
 };
 
-const mapDispatchToProps = (dispatch:any) => {
-    return {
-        
-    }
-};
-
-
 const UIStateContainer = connect(
-    mapStateToProps,
-    mapDispatchToProps
+    mapStateToProps
 )(UIManager);
 
 export default UIStateContainer;

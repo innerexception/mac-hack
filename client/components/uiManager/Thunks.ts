@@ -92,12 +92,20 @@ export const onAttackTile = (attacker:Player, ability:Ability, tile:Tile, sessio
             target.respawnTurns = MaxRespawnTurns
         }
         else {
-            //TODO apply ability status effect
+            //apply ability status effect
             let candidateTuple
             switch(ability.effect){
                 case StatusEffect.ABILITY_LOCK: 
-                case StatusEffect.CDR:
+                    target.character.abilities.forEach(abil=>abil.cdr=abil.maxCdr)
+                    break
+                case StatusEffect.ABILITY_UNLOCK: 
+                    target.character.abilities.forEach(abil=>abil.cdr=0)
+                    break
                 case StatusEffect.MOVES_MINUS_1:
+                    if(target.character.move > 0) target.character.move--
+                    break
+                case StatusEffect.BLIND: 
+                    target.character.sight = 2
                 case StatusEffect.PULL:
                     if(target.y===attacker.y){
                         if(target.x > attacker.x) candidateTuple = {x: target.x-1, y:target.y}
