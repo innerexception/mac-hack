@@ -23,10 +23,10 @@
     "@types/react-redux": "^7.0.2",
     "@types/react-transition-group": "^2.0.16",
     "@types/redux-thunk": "^2.1.0",
-    "babel-loader": "^8.0.5",
+    "babel-loader": "^8.3.0",
     "babel-polyfill": "^6.26.0",
-    "css-loader": "^2.1.0",
-    "file-loader": "^3.0.1",
+    "css-loader": "^6.7.3",
+    "file-loader": "^6.2.0",
     "file-saver": "^2.0.2",
     "http": "0.0.0",
     "normalize.css": "^8.0.1",
@@ -36,11 +36,11 @@
     "react-transition-group": "^2.8.0",
     "redux": "^3.7.2",
     "redux-thunk": "^1.0.3",
-    "style-loader": "^0.23.1",
-    "ts-loader": "^5.3.3",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.3.3333",
-    "url-loader": "^1.1.2",
-    "webpack": "^4.29.6",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.75.0",
     "websocket": "^1.0.28"
   },
   "author": "jbaker",
@@ -51,6 +51,6 @@
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-react": "^7.0.0",
     "@types/file-saver": "^2.0.0",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^5.0.1"
   }
 }
